@@ -1,0 +1,176 @@
+<button (click)="add()">
+    ADD TASK
+</button>
+<div class="container-fluid" [formGroup]="form">
+    <div class="row border-bottom">
+        <!-- Duration-->
+        <div class="col-6" formGroupName="start">
+            <strong>Inicio</strong>
+            <div class="row">
+                <div class="col-6">
+
+                    <label>Año</label>
+                    <input type="number" formControlName="year">
+
+                </div>
+                <div class="col-6">
+
+                    <!-- TODO generalize-->
+                    <label>Mes</label>
+                    <select formControlName="month">
+                        <option [value]="0">Enero</option>
+                        <option [value]="1">Febrero</option>
+                        <option [value]="2">Marzo</option>
+                        <option [value]="3">Abril</option>
+                        <option [value]="4">Mayo</option>
+                        <option [value]="5">Junio</option>
+                        <option [value]="6">Julio</option>
+                        <option [value]="7">Agosto</option>
+                        <option [value]="8">Septiembre</option>
+                        <option [value]="9">Octubre</option>
+                        <option [value]="10">Noviembre</option>
+                        <option [value]="11">Diciembre</option>
+                    </select>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-6" formGroupName="end">
+            <strong>Fin</strong>
+            <div class="row">
+                <div class="col-6">
+                    <label>Año</label>
+                    <input matInput type="number" formControlName="year">
+                </div>
+                <div class="col-6">
+                    <!-- TODO generalize-->
+                    <label>Mes</label>
+                    <select formControlName="month">
+                        <option [value]="0">Enero</option>
+                        <option [value]="1">Febrero</option>
+                        <option [value]="2">Marzo</option>
+                        <option [value]="3">Abril</option>
+                        <option [value]="4">Mayo</option>
+                        <option [value]="5">Junio</option>
+                        <option [value]="6">Julio</option>
+                        <option [value]="7">Agosto</option>
+                        <option [value]="8">Septiembre</option>
+                        <option [value]="9">Octubre</option>
+                        <option [value]="10">Noviembre</option>
+                        <option [value]="11">Diciembre</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--  <div class="row">
+
+        <div class="col-3 border-end">
+            <div class="row">
+
+                <ng-container formArrayName="tasks">
+                    @for(item of tasks.controls; track item; let index = $index) {
+                    <div class="col-7" [formGroupName]="index">
+                        <form-field>
+                            <label>Tarea</label>
+                            <input matInput formControlName="name">
+                        </form-field>
+                    </div>
+                    <div class="col-3" [formGroupName]="index">
+                        <form-field>
+                            <label>Semanas</label>
+                            <input matInput type="number" formControlName="weeks">
+                        </form-field>
+                    </div>
+                    <div class="col-2">
+                        <button icon-button (click)="remove(index)">
+                            <icon>delete</icon>
+                        </button>
+                    </div>
+                    }
+                </ng-container>
+            </div>
+            <div class="row">
+                <div class="col-12 text-end">
+                    <button raised-button (click)="add()">
+                        <icon>add</icon>
+                        Añadir
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-9">
+            <table>
+                <thead>
+                    <tr class="header">
+                        <th colspan="2">Tarea</th>
+                        @for (m of months; track m) {
+                        <th>{{m}}</th>
+                        }
+                    </tr>
+                    <tr class="header">
+                        @for (w of weeks; track w) {
+                        <th>{{ w.split('-')[1] }}</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-s- Las filas de tareas se generarán aquí --
+                </tbody>
+            </table>
+        </div>
+    </div> -->
+</div>
+<div class="container-fluid" [formGroup]="form">
+    <div class="row">
+        <div class="col-12">
+            <button (click)="toExcel2()">Descargar tabla?</button>
+            <table id="LaTabla">
+                <thead class="bold-border">
+                    <tr class="header">
+                        <th rowspan="2" class="bold-border-right">Tarea</th>
+                        <th rowspan="2" class="bold-border-right">Duración<br />semanas</th>
+                        @for(m of months; track m.key; let index = $index) {
+                        <th colspan="4" class="bold-border-bottom"
+                            [class]="{'bold-border-right': index !== months.length -1 }">{{ m.year }}-{{ m.month + 1 }}
+                        </th>
+                        }
+                    </tr>
+                    <tr>
+                        @for(w of weeks; track w.key) {
+                        <th [class]="{'bold-border-right': w.offset == 3}">{{ w.offset }}</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody formArrayName="tasks" class="bold-border">
+                    <!-- Las filas de tareas se generarán aquí -->
+                    @for(item of tasks.controls; track item; let index = $index) {
+                    <tr [formGroupName]="index">
+                        <th scope="col" class="bold-border-right">
+                            <input type="text" formControlName="name">
+                            <span class="not-visible">
+                                {{ tasks.controls.at(index)?.value?.name}}
+                            </span>
+                        </th>
+                        <td class="bold-border-right">
+                            <input type="number" formControlName="weeks" [style.width.px]="50">
+                            <span class="not-visible">
+                                {{ tasks.controls.at(index)?.value?.weeks}}
+                            </span>
+                        </td>
+                        @for(w of weeks; track w.key) {
+                        <td (click)="setStart(index, w)" style="cursor: pointer;"
+                            [class]="{'bold-border-right': w.offset == 3, 'selected': isSelected(index, w)}">
+                            <span class="not-visible">
+                                &nbsp;
+                            </span>
+                        </td>
+                        }
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

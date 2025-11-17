@@ -1,0 +1,7 @@
+<h1>Project List</h1>
+
+<ul>
+    @for (p of projectList(); track p.uuid) {
+<li>{{ p.title }} <a [routerLink]="['..', 'project', p.uuid]">Got to details</a></li>
+    }
+</ul>
