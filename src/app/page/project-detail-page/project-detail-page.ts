@@ -2,16 +2,18 @@ import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@ang
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { ProjectService } from '../../service/project-service';
-import { Project } from '../../service/project';
+import { Project, UpsertProjectCommand } from '../../model/project.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { JsonPipe } from '@angular/common';
 import { TaskGantt } from "../../component/project/task-gantt/task-gantt";
+import { ProjectForm } from "../../component/project/project-form/project-form";
 
 @Component({
   selector: 'app-project-detail-page',
   imports: [
     JsonPipe, // TODO testing only
-    TaskGantt
+    TaskGantt,
+    ProjectForm
 ],
   templateUrl: './project-detail-page.html',
   styleUrl: './project-detail-page.scss',
@@ -60,6 +62,10 @@ export class ProjectDetailPage {
 
   processTaskEvent(event: "add-task" | "remove-task" ): void {
     console.log('evento desde hijo', event);
+  }
+
+  update(data: UpsertProjectCommand): void {
+    alert('Vamos a cambiar el titulo a ' + data.title);
   }
 
 }

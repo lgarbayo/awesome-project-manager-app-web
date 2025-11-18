@@ -1,0 +1,17 @@
+<form [formGroup]="form">
+
+  <!-- Title -->
+  <div>
+    <label>Title</label>
+    <input formControlName="title" />
+  </div>
+
+  <!-- Description -->
+  <div>
+    <label>Description</label>
+    <textarea rows="3" formControlName="description"></textarea>
+  </div>
+</form>
+<div>
+    <button (click)="save()">Guardar cambios</button>
+</div>

@@ -11,6 +11,16 @@
 </div>
 
 <div>
+    <h2>Editar</h2>
+    <div>
+        <app-project-form [data]="p" (edited)="update($event)"></app-project-form>
+    </div>
+    <div>
+        <button>Guardar</button>
+    </div>
+</div>
+
+<div>
     <h2>Gantt</h2>
     <app-task-gantt [color]="color()" (event)="processTaskEvent($event)"></app-task-gantt>
 </div>

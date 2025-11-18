@@ -2,12 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { ProjectService } from '../../service/project-service';
 import { Project } from '../../model/project.model';
 import { RouterLink } from '@angular/router';
+import { ProjectForm } from "../../component/project/project-form/project-form";
 
 @Component({
   selector: 'app-project-list-page',
   imports: [
-    RouterLink
-  ],
+    RouterLink,
+    ProjectForm
+],
   templateUrl: './project-list-page.html',
   styleUrl: './project-list-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
