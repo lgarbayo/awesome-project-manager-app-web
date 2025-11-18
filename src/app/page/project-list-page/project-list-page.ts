@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ProjectService } from '../../service/project-service';
 import { Project } from '../../model/project.model';
 import { RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
   ],
   templateUrl: './project-list-page.html',
   styleUrl: './project-list-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectListPage implements OnInit {
   private projectService = inject(ProjectService);
@@ -22,7 +23,8 @@ export class ProjectListPage implements OnInit {
       error: e => {
         console.error('Unable to fetch project list', e);
         // TODO what to do here?
-      }
+      },
+      complete: () => console.log('complete')
     });
   }
 }

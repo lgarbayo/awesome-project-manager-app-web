@@ -3,11 +3,15 @@
 <pre><code>{{ p | json}}</code></pre>
 
 <div>
-    Layout pending
+    Layout pending.
+
+    <div>
+        Toggle color <button (click)="toggle()">Cambiar color</button>
+    </div>
 </div>
 
 <div>
     <h2>Gantt</h2>
-    <app-task-gantt></app-task-gantt>
+    <app-task-gantt [color]="color()" (event)="processTaskEvent($event)"></app-task-gantt>
 </div>
 }

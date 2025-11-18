@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { ProjectService } from '../../service/project-service';
@@ -15,6 +15,7 @@ import { TaskGantt } from "../../component/project/task-gantt/task-gantt";
 ],
   templateUrl: './project-detail-page.html',
   styleUrl: './project-detail-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectDetailPage {
   private activatedRoute = inject(ActivatedRoute);
@@ -27,6 +28,8 @@ export class ProjectDetailPage {
   );
 
   project = signal<Project | undefined>(undefined);
+
+  color = signal<'black' | 'red' | 'orange'>('black');
 
   constructor() {
     effect(() => {
@@ -42,6 +45,21 @@ export class ProjectDetailPage {
         });
       }
     });
+  }
+
+  toggle(): void {
+    const value = this.color();
+    if (value === 'black') {
+      this.color.set('orange');
+    } else if (value === 'orange') {
+      this.color.set('red');
+    } else {
+      this.color.set('black');
+    }
+  }
+
+  processTaskEvent(event: "add-task" | "remove-task" ): void {
+    console.log('evento desde hijo', event);
   }
 
 }

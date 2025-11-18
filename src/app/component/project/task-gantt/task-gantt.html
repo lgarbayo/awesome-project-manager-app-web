@@ -1,4 +1,4 @@
-<button (click)="add()">
+<button (click)="add()" [class.color-red]="color() == 'red'" [class.color-orange]="color() == 'orange'">
     ADD TASK
 </button>
 <div class="container-fluid" [formGroup]="form">

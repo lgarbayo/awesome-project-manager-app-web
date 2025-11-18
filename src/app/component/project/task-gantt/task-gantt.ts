@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -64,10 +64,15 @@ interface Week {
   ],
   templateUrl: './task-gantt.html',
   styleUrl: './task-gantt.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskGantt {
 
   private nfb = inject(NonNullableFormBuilder);
+
+  color = input<'black' | 'red' | 'orange'>('black');
+  event = output<'add-task' | 'remove-task'>();
+
   form = this.createForm();
   months: Array<Month> = [];
   weeks: Array<Week> = [];
@@ -107,10 +112,12 @@ export class TaskGantt {
 
   add(): void {
     this.form.controls.tasks.push(this.createTask());
+    this.event.emit('add-task');
   }
 
   remove(position: number): void {
     this.form.controls.tasks.removeAt(position);
+    this.event.emit('remove-task');
   }
 
   updateMonths(): void {

@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { FormControl, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { Project, UpsertProjectCommandForm } from '../model/project.model';
 import { CoreService } from './core-service';
-import { map, Observable } from 'rxjs';
+import { delay, map, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 
@@ -76,7 +76,8 @@ export class ProjectService {
           throw { status: 404, message: 'project not found' };
         }
         return result;
-      })
+      }),
+      delay(250)
     );
   }
 
