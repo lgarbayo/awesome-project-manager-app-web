@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { FormControl, NonNullableFormBuilder, Validators } from '@angular/forms';
-import { Project, UpsertProjectCommandForm } from '../model/project.model';
+import { Project, UpsertProjectCommand, UpsertProjectCommandForm } from '../model/project.model';
 import { CoreService } from './core-service';
 import { delay, map, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -88,7 +88,7 @@ export class ProjectService {
     );
   }
 
-  updateProject(projectUuid: string, command: UpsertProjectCommandForm): Observable<Project> {
+  updateProject(projectUuid: string, command: UpsertProjectCommand): Observable<Project> {
     return this.http.put<Project>(
       `path/${projectUuid}`,
       command

@@ -11,6 +11,11 @@
     <label>Description</label>
     <textarea rows="3" formControlName="description"></textarea>
   </div>
+
+  <div formGroupName="startDate">
+    <label>Start Date</label>
+    <input type="number" formControlName="week" />
+  </div>
 </form>
 <div>
     <button (click)="save()">Guardar cambios</button>

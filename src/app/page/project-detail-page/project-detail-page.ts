@@ -66,6 +66,13 @@ export class ProjectDetailPage {
 
   update(data: UpsertProjectCommand): void {
     alert('Vamos a cambiar el titulo a ' + data.title);
+    this.projectService.updateProject(
+      this.projectUuid()!,
+      data
+    ).subscribe({
+      next: e => console.log('Saved ok'),
+      error: e => console.log('show somethign to users')
+    })
   }
 
 }
