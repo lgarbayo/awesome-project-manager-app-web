@@ -1,0 +1,94 @@
+<form [formGroup]="form" (ngSubmit)="save()">
+  <div class="field-group">
+    <label>Project title</label>
+    <input formControlName="title" placeholder="Roadmap 2025" />
+    @if (form.controls.title.invalid && form.controls.title.touched) {
+      <small>This field is required.</small>
+    }
+  </div>
+
+  <div class="field-group">
+    <label>Description</label>
+    <textarea rows="3" formControlName="description" placeholder="Describe the scope"></textarea>
+  </div>
+
+  <fieldset formGroupName="startDate">
+    <label>Start date</label>
+    <div class="fieldset-grid">
+      <div>
+        <label>Year</label>
+        <input type="number" formControlName="year" />
+      </div>
+      <div>
+        <label>Month</label>
+        <select formControlName="month">
+          @for (month of core.monthNames; track month; let idx = $index) {
+            <option [value]="idx">{{ month }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Week</label>
+        <select formControlName="week">
+          <option [value]="0">Week 1</option>
+          <option [value]="1">Week 2</option>
+          <option [value]="2">Week 3</option>
+          <option [value]="3">Week 4</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset formGroupName="endDate">
+    <label>End date</label>
+    <div class="fieldset-grid">
+      <div>
+        <label>Year</label>
+        <input type="number" formControlName="year" />
+      </div>
+      <div>
+        <label>Month</label>
+        <select formControlName="month">
+          @for (month of core.monthNames; track month; let idx = $index) {
+            <option [value]="idx">{{ month }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Week</label>
+        <select formControlName="week">
+          <option [value]="0">Week 1</option>
+          <option [value]="1">Week 2</option>
+          <option [value]="2">Week 3</option>
+          <option [value]="3">Week 4</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <section class="stack-md">
+    <h3>Extra fields</h3>
+    <div class="field-group additional-controls" [formGroup]="additionalFieldForm">
+      <input placeholder="Field name" formControlName="key" />
+      <input placeholder="Value" formControlName="value" />
+      <button class="btn ghost" type="button" (click)="addAdditionalField()">Add field</button>
+    </div>
+    @if (additionalFieldForm.controls.key.errors?.['duplicated']) {
+      <small>The field already exists in the list.</small>
+    }
+    <div class="stack-sm">
+      @for (field of additionalFieldList(); track field.key) {
+        <div class="field-group">
+          <label>{{ field.key }}</label>
+          <input [formControl]="field.control" />
+          <button class="btn danger" type="button" (click)="removeAdditionalField(field.key)">Delete</button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="btn primary" type="submit">Save project</button>
+    <button class="btn ghost" type="button" (click)="resetForm()">Clear form</button>
+  </div>
+</form>

@@ -1,0 +1,44 @@
+<form [formGroup]="form" (ngSubmit)="save()">
+  <div class="field-group">
+    <label>Task title</label>
+    <input formControlName="title" />
+  </div>
+
+  <div class="field-group">
+    <label>Description</label>
+    <textarea rows="3" formControlName="description"></textarea>
+  </div>
+
+  <div class="field-group">
+    <label>Duration (weeks)</label>
+    <input type="number" min="1" formControlName="durationWeeks" />
+  </div>
+
+  <fieldset formGroupName="startDate">
+    <legend>Start date</legend>
+    <label>Year</label>
+    <input type="number" formControlName="year" />
+    <label>Month</label>
+    <select formControlName="month">
+      @for (month of core.monthNames; track month; let idx = $index) {
+        <option [value]="idx">{{ month }}</option>
+      }
+    </select>
+    <label>Week</label>
+    <select formControlName="week">
+      <option [value]="0">Week 1</option>
+      <option [value]="1">Week 2</option>
+      <option [value]="2">Week 3</option>
+      <option [value]="3">Week 4</option>
+    </select>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="btn primary" type="submit">
+      {{ isEditing() ? 'Update task' : 'Save task' }}
+    </button>
+    @if (isEditing()) {
+      <button class="btn ghost" type="button" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+</form>

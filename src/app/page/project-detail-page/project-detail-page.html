@@ -1,0 +1,169 @@
+<section class="stack-md">
+  @if (project(); as projectDetail) {
+    <article class="card pad stack-md">
+      <div class="row">
+        <div>
+          <p class="subtitle">Project summary</p>
+          <h1 class="title">{{ projectDetail.title }}</h1>
+        </div>
+        <span class="pill">UUID: {{ projectDetail.uuid }}</span>
+      </div>
+      <p>{{ projectDetail.description || 'No description available.' }}</p>
+      <dl>
+        <dt>Start</dt>
+        <dd>{{ core.formatDateLabel(projectDetail.startDate) }}</dd>
+        <dt>End</dt>
+        <dd>{{ core.formatDateLabel(projectDetail.endDate) }}</dd>
+      </dl>
+      @if (projectDetail.additionalFields && (projectDetail.additionalFields | keyvalue).length) {
+        <h3>Extra fields</h3>
+        <ul class="stack-sm">
+          @for (field of projectDetail.additionalFields | keyvalue; track field.key) {
+            <li><strong>{{ field.key }}:</strong> {{ field.value }}</li>
+          }
+        </ul>
+      }
+    </article>
+
+    <article class="card pad stack-md">
+      <div class="row">
+        <div>
+          <h2 class="title">Edit project</h2>
+        </div>
+      </div>
+      <app-project-form [data]="projectDetail" (edited)="update($event)"></app-project-form>
+    </article>
+
+    <div class="grid two">
+      <article class="card pad stack-md">
+        <div class="row">
+          <h2 class="title">Milestones</h2>
+          <button class="btn ghost" type="button" (click)="refreshMilestones()">Refresh</button>
+        </div>
+        @if (milestoneLoading()) {
+          <p>Loading milestones...</p>
+        }
+        @if (milestoneError(); as error) {
+          <p class="error">{{ error }}</p>
+        }
+        @if (selectedMilestone(); as editingMilestone) {
+          <p class="pill warning">Editing: {{ editingMilestone.title }}</p>
+        }
+        @if (!milestoneLoading() && milestones().length === 0) {
+          <p>No milestones registered yet.</p>
+        } @else {
+          <ul class="stack-md">
+            @for (milestone of milestones(); track trackMilestone($index, milestone)) {
+              <li class="task">
+                <div class="row">
+                  <strong>{{ milestone.title }}</strong>
+                  <div class="task-actions">
+                    <button class="btn ghost" type="button" (click)="editMilestone(milestone)">Edit</button>
+                    <button class="btn danger" type="button" (click)="removeMilestone(milestone.uuid)">Delete</button>
+                  </div>
+                </div>
+                <p class="muted">
+                  {{ core.formatDateLabel(milestone.date) }}
+                </p>
+                <p class="note">{{ milestone.description || 'No description.' }}</p>
+              </li>
+            }
+          </ul>
+        }
+        <app-milestone-form
+          #milestoneCreator
+          [data]="selectedMilestone() ?? undefined"
+          (submitted)="saveMilestone($event)"
+          (cancelled)="cancelMilestoneEdition()"
+        ></app-milestone-form>
+      </article>
+
+      <article class="card pad stack-md">
+        <div class="row">
+          <h2 class="title">Tasks</h2>
+          <button class="btn ghost" type="button" (click)="refreshTasks()">Refresh</button>
+        </div>
+        @if (taskLoading()) {
+          <p>Loading tasks...</p>
+        }
+        @if (taskError(); as error) {
+          <p class="error">{{ error }}</p>
+        }
+        @if (selectedTask(); as editingTask) {
+          <p class="pill warning">Editing: {{ editingTask.title }}</p>
+        }
+        @if (!taskLoading() && tasks().length === 0) {
+          <p>No tasks registered yet.</p>
+        } @else {
+          <ul class="stack-md">
+            @for (task of tasks(); track trackTask($index, task)) {
+              <li class="task">
+                <div class="row">
+                  <strong>{{ task.title }}</strong>
+                  <div class="task-actions">
+                    <button class="btn ghost" type="button" (click)="editTask(task)">Edit</button>
+                    <button class="btn danger" type="button" (click)="removeTask(task.uuid)">Delete</button>
+                  </div>
+                </div>
+                <p class="muted">
+                  {{ core.formatDateLabel(task.startDate) }} · {{ task.durationWeeks }} weeks
+                </p>
+                <p class="note">{{ task.description || 'No description.' }}</p>
+              </li>
+            }
+          </ul>
+        }
+        <app-task-form
+          #taskCreator
+          [data]="selectedTask() ?? undefined"
+          (submitted)="saveTask($event)"
+          (cancelled)="cancelTaskEdition()"
+        ></app-task-form>
+      </article>
+    </div>
+
+    <article class="card pad stack-md">
+      <div class="row">
+        <h2 class="title">Project analysis</h2>
+        <button class="btn ghost" type="button" (click)="refreshAnalysis()">Refresh</button>
+      </div>
+      @if (analysisLoading()) {
+        <p>Loading analysis...</p>
+      }
+      @if (analysisError(); as error) {
+        <p class="error">{{ error }}</p>
+      }
+      @if (analysis(); as data) {
+        <div class="analysis stack-md">
+          @for (milestoneAnalysis of data.milestoneList; track milestoneAnalysis.milestoneUuid) {
+            <article class="task">
+              <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
+              <p class="muted">
+                {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
+                {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
+              </p>
+              <p>
+                Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+                {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+              </p>
+              <ul class="stack-sm">
+                @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
+                  <li>
+                    {{ taskAnalysis.taskTitle }} · {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+                    {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                  </li>
+                }
+              </ul>
+            </article>
+          }
+        </div>
+      } @else if (!analysisLoading()) {
+        <p>No analysis data yet.</p>
+      }
+    </article>
+  } @else {
+    <article class="card pad">
+      <p>Select a project from the list to keep working.</p>
+    </article>
+  }
+</section>
