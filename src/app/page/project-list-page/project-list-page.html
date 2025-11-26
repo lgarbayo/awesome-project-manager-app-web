@@ -1,17 +1,46 @@
-<h1>Project List</h1>
-
-<ul>
-    @for (p of projectList(); track p.uuid) {
-    <li>
-        {{ p.title }}
-        <a [routerLink]="['..', 'project', p.uuid]">Go to details</a>
-    </li>
-    }
-</ul>
-
-<div>
-    <app-project-form></app-project-form>
-    <div>
-        <button>CREAR</button>
+<section class="stack-md">
+  <article class="card pad stack-md">
+    <div class="row">
+      <div>
+        <h1 class="title">Active projects</h1>
+        <span class="pill">{{ projectList().length }} total</span>
+      </div>
+      <div class="form-actions">
+        <button class="btn ghost" type="button" (click)="loadProjects()">Refresh</button>
+        @if (loading()) {
+          <span class="pill">Loading...</span>
+        }
+      </div>
     </div>
-</div>
+    @if (errorMessage(); as error) {
+      <p class="error">{{ error }}</p>
+    }
+
+    @if (!loading() && projectList().length === 0) {
+      <p>There are no projects yet. Use the form below to create the first one.</p>
+    } @else {
+      <div class="grid projects">
+        @for (project of projectList(); track trackProject($index, project)) {
+          <article class="project-card">
+            <div>
+              <p class="project-title">{{ project.title }}</p>
+              <p class="project-meta">
+                <span>Start: {{ core.formatDateLabel(project.startDate) }}</span>
+                <span>End: {{ core.formatDateLabel(project.endDate) }}</span>
+              </p>
+            </div>
+            <div class="project-actions">
+              <a class="btn ghost" [routerLink]="['..', 'project', project.uuid]">View details</a>
+              <button class="btn danger" type="button" (click)="deleteProject(project.uuid)">Delete</button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </article>
+
+  <article class="card pad stack-md">
+    <h2 class="title">Create a new project</h2>
+    <app-project-form (edited)="createProject($event)"></app-project-form>
+  </article>
+</section>

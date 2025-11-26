@@ -1,28 +1,25 @@
 import { FormControl, FormGroup, FormRecord } from "@angular/forms";
 import { DateType, DateTypeForm } from "./core.model";
 
-
-export interface Project {
+export interface Task {
   uuid: string;
+  projectUuid: string;
   title: string;
   description?: string;
+  durationWeeks: number;
   startDate: DateType;
-  endDate: DateType;
-  additionalFields?: Record<string, string>;
 }
 
-export interface UpsertProjectCommand {
+export interface UpsertTaskCommand {
   title: string;
   description?: string;
+  durationWeeks: number;
   startDate: DateType;
-  endDate: DateType;
-  additionalFields?: Record<string, string>;
 }
 
-export type UpsertProjectCommandForm = FormGroup<{
+export type UpsertTaskCommandForm = FormGroup<{
   title: FormControl<string>;
   description: FormControl<string>;
+  durationWeeks: FormControl<number>;
   startDate: DateTypeForm;
-  endDate: DateTypeForm;
-  additionalFields: FormRecord<FormControl<string>>;
 }>;

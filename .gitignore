@@ -41,3 +41,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+/assets
+Project - Awesome Project Management - REST API_v0.0.1.pdf

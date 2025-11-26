@@ -63,7 +63,6 @@ interface Week {
     ReactiveFormsModule
   ],
   templateUrl: './task-gantt.html',
-  styleUrl: './task-gantt.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskGantt {
@@ -182,7 +181,7 @@ export class TaskGantt {
    * https://github.com/linways/table-to-excel/blob/master/src/tableToExcel.js
    * https://github.com/linways/table-to-excel/blob/master/src/parser.js
    * 
-   * O quizá tirar de https://www.npmjs.com/package/exceljs
+   * Or maybe rely on https://www.npmjs.com/package/exceljs
    */
 
   toExcel(): void {
