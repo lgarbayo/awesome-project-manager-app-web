@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root',
 })
 export class ProjectService {
-  private readonly resourceUrl = '/project';
+  private readonly resourceUrl = '/api/project';
   private nfb = inject(NonNullableFormBuilder);
   private coreService = inject(CoreService);
   private http = inject(HttpClient);

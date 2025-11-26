@@ -9,7 +9,7 @@ import { CoreService } from './core-service';
   providedIn: 'root',
 })
 export class MilestoneService {
-  private readonly projectUrl = '/project';
+  private readonly projectUrl = '/api/project';
   private http = inject(HttpClient);
   private nfb = inject(NonNullableFormBuilder);
   private coreService = inject(CoreService);
