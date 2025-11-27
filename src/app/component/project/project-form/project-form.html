@@ -1,19 +1,19 @@
 <form [formGroup]="form" (ngSubmit)="save()">
-  <div class="field-group">
-    <label>Project title</label>
+  <fieldset>
+    <legend>Project title</legend>
     <input formControlName="title" placeholder="Roadmap 2025" />
     @if (form.controls.title.invalid && form.controls.title.touched) {
-      <small>This field is required.</small>
+      <small>⚠️ This field is required.</small>
     }
-  </div>
+  </fieldset>
 
-  <div class="field-group">
-    <label>Description</label>
+  <fieldset>
+    <legend>Description</legend>
     <textarea rows="3" formControlName="description" placeholder="Describe the scope"></textarea>
-  </div>
+  </fieldset>
 
   <fieldset formGroupName="startDate">
-    <label>Start date</label>
+    <legend>Start date</legend>
     <div class="fieldset-grid">
       <div>
         <label>Year</label>
@@ -40,7 +40,7 @@
   </fieldset>
 
   <fieldset formGroupName="endDate">
-    <label>End date</label>
+    <legend>End date</legend>
     <div class="fieldset-grid">
       <div>
         <label>Year</label>
@@ -66,11 +66,21 @@
     </div>
   </fieldset>
 
-  <section class="stack-md">
-    <h3>Extra fields</h3>
-    <div class="field-group additional-controls" [formGroup]="additionalFieldForm">
-      <input placeholder="Field name" formControlName="key" />
-      <input placeholder="Value" formControlName="value" />
+  <fieldset>
+    <legend>Extra fields</legend>
+    <div class="additional-controls" [formGroup]="additionalFieldForm">
+      <div class="additional-field">
+        <input placeholder="Field name" formControlName="key" />
+        @if (additionalFieldForm.controls.key.invalid && additionalFieldForm.controls.key.touched) {
+          <small>⚠️ This field is required.</small>
+        }
+      </div>
+      <div class="additional-field">
+        <input placeholder="Value" formControlName="value" />
+        @if (additionalFieldForm.controls.value.invalid && additionalFieldForm.controls.value.touched) {
+          <small>⚠️ This field is required.</small>
+        }
+      </div>
       <button class="btn ghost" type="button" (click)="addAdditionalField()">Add field</button>
     </div>
     @if (additionalFieldForm.controls.key.errors?.['duplicated']) {
@@ -85,7 +95,7 @@
         </div>
       }
     </div>
-  </section>
+  </fieldset>
 
   <div class="form-actions">
     <button class="btn primary" type="submit">Save project</button>

@@ -4,7 +4,7 @@ import { map } from 'rxjs';
 import { ProjectService } from '../../service/project-service';
 import { Project, UpsertProjectCommand } from '../../model/project.model';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { DecimalPipe, KeyValuePipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Milestone, UpsertMilestoneCommand } from '../../model/milestone.model';
 import { Task, UpsertTaskCommand } from '../../model/task.model';
 import { MilestoneService } from '../../service/milestone-service';
@@ -21,7 +21,6 @@ import { CoreService } from '../../service/core-service';
   standalone: true,
   imports: [
     DecimalPipe,
-    KeyValuePipe,
     ProjectForm,
     MilestoneForm,
     TaskForm
@@ -229,10 +228,16 @@ export class ProjectDetailPage {
     }
   }
 
+  // same as trackBy function in *ngFor:
+  // is useful to tell Angular how to track items inn the list
+  // each card should be tracked by its project.uuid, so Angular don't destroy and recreate DOM elements unnecessarily
   trackMilestone(_: number, milestone: Milestone): string {
     return milestone.uuid;
   }
 
+  // same as trackBy function in *ngFor:
+  // is useful to tell Angular how to track items inn the list
+  // each card should be tracked by its project.uuid, so Angular don't destroy and recreate DOM elements unnecessarily
   trackTask(_: number, task: Task): string {
     return task.uuid;
   }

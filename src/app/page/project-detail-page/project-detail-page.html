@@ -3,31 +3,6 @@
     <article class="card pad stack-md">
       <div class="row">
         <div>
-          <p class="subtitle">Project summary</p>
-          <h1 class="title">{{ projectDetail.title }}</h1>
-        </div>
-        <span class="pill">UUID: {{ projectDetail.uuid }}</span>
-      </div>
-      <p>{{ projectDetail.description || 'No description available.' }}</p>
-      <dl>
-        <dt>Start</dt>
-        <dd>{{ core.formatDateLabel(projectDetail.startDate) }}</dd>
-        <dt>End</dt>
-        <dd>{{ core.formatDateLabel(projectDetail.endDate) }}</dd>
-      </dl>
-      @if (projectDetail.additionalFields && (projectDetail.additionalFields | keyvalue).length) {
-        <h3>Extra fields</h3>
-        <ul class="stack-sm">
-          @for (field of projectDetail.additionalFields | keyvalue; track field.key) {
-            <li><strong>{{ field.key }}:</strong> {{ field.value }}</li>
-          }
-        </ul>
-      }
-    </article>
-
-    <article class="card pad stack-md">
-      <div class="row">
-        <div>
           <h2 class="title">Edit project</h2>
         </div>
       </div>
@@ -36,7 +11,7 @@
 
     <div class="grid two">
       <article class="card pad stack-md">
-        <div class="row">
+        <div class="row row-refresh">
           <h2 class="title">Milestones</h2>
           <button class="btn ghost" type="button" (click)="refreshMilestones()">Refresh</button>
         </div>
@@ -79,7 +54,7 @@
       </article>
 
       <article class="card pad stack-md">
-        <div class="row">
+        <div class="row row-refresh">
           <h2 class="title">Tasks</h2>
           <button class="btn ghost" type="button" (click)="refreshTasks()">Refresh</button>
         </div>
@@ -123,7 +98,7 @@
     </div>
 
     <article class="card pad stack-md">
-      <div class="row">
+      <div class="row row-refresh">
         <h2 class="title">Project analysis</h2>
         <button class="btn ghost" type="button" (click)="refreshAnalysis()">Refresh</button>
       </div>

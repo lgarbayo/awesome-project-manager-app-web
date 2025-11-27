@@ -23,6 +23,7 @@ export class ProjectListPage implements OnInit {
   projectList = signal<Array<Project>>([]);
   loading = signal(false);
   errorMessage = signal<string | null>(null);
+  showCreateModal = signal(false);
 
   ngOnInit(): void {
     this.loadProjects();
@@ -49,6 +50,7 @@ export class ProjectListPage implements OnInit {
     this.projectService.createProject(command).subscribe({
       next: () => {
         this.projectFormComponent?.resetForm();
+        this.closeCreateModal();
         this.loadProjects();
       },
       error: (error) => {
@@ -57,6 +59,15 @@ export class ProjectListPage implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  openCreateModal(): void {
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal(): void {
+    this.projectFormComponent?.resetForm();
+    this.showCreateModal.set(false);
   }
 
   deleteProject(projectUuid: string): void {
@@ -71,6 +82,9 @@ export class ProjectListPage implements OnInit {
     });
   }
 
+  // same as trackBy function in *ngFor:
+  // is useful to tell Angular how to track items inn the list
+  // each card should be tracked by its project.uuid, so Angular don't destroy and recreate DOM elements unnecessarily
   trackProject(_: number, project: Project): string {
     return project.uuid;
   }

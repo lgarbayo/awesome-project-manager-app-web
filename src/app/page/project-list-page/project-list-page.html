@@ -1,11 +1,12 @@
 <section class="stack-md">
   <article class="card pad stack-md">
-    <div class="row">
+    <div class="row row-refresh">
       <div>
         <h1 class="title">Active projects</h1>
         <span class="pill">{{ projectList().length }} total</span>
       </div>
       <div class="form-actions">
+        <button class="btn primary" type="button" (click)="openCreateModal()">+</button>
         <button class="btn ghost" type="button" (click)="loadProjects()">Refresh</button>
         @if (loading()) {
           <span class="pill">Loading...</span>
@@ -39,8 +40,17 @@
     }
   </article>
 
-  <article class="card pad stack-md">
-    <h2 class="title">Create a new project</h2>
-    <app-project-form (edited)="createProject($event)"></app-project-form>
-  </article>
+  @if (showCreateModal()) {
+    <div class="modal-backdrop" (click)="closeCreateModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="title">Create a new project</h2>
+          <button class="btn ghost" type="button" (click)="closeCreateModal()">Close</button>
+        </div>
+        <div class="modal-body">
+          <app-project-form (edited)="createProject($event)"></app-project-form>
+        </div>
+      </div>
+    </div>
+  }
 </section>

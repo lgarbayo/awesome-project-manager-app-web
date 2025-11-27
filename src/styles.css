@@ -4,6 +4,16 @@ html, body { height: 100%; }
 body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: var(--text); background: var(--bg); transition: background-color .2s ease, color .2s ease; display:flex; flex-direction:column; min-height:100vh; }
 main { flex: 1 0 auto; }
 
+::selection,
+::-moz-selection,
+body::selection,
+body::-moz-selection,
+body *::selection,
+body *::-moz-selection {
+  background-color: rgba(59,130,246,0.65) !important;
+  color: #fff !important;
+}
+
 :root {
   --bg: #fffdf5;              /* crema muy suave */
   --card: #ffffff;            /* tarjetas blancas */
@@ -123,7 +133,9 @@ textarea { min-height: 96px; resize: vertical; }
 .form-row { display: grid; grid-template-columns: 1fr; gap: 14px; }
 .form-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
 .additional-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.additional-controls input { flex: 1 1 200px; }
+.additional-controls input { width: 100%; }
+.additional-controls .additional-field { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.additional-controls .additional-field small { margin-top: 0; }
 .additional-controls .btn { flex: 0 0 auto; }
 .select-inline { width: auto; min-width: 140px; padding-left: 10px; padding-right: 32px; background: var(--card); color: var(--text); background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 16px) calc(50% - 2px); background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 
@@ -141,6 +153,36 @@ textarea { min-height: 96px; resize: vertical; }
 .btn.ghost:hover { background: var(--ghost-hover); }
 .btn.danger { background: rgba(239,68,68,0.12); color: #fca5a5; border-color: rgba(239,68,68,0.35); }
 .btn.danger:hover { background: rgba(239,68,68,0.2); }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  z-index: 1000;
+  overflow-y: auto;
+}
+.modal {
+  background: var(--card);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  width: min(960px, 100%);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-body {
+  padding: 20px;
+}
 
 /* Icon and link-style buttons */
 .btn-icon { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border-radius:8px; border:1px solid var(--border); background: var(--button-bg); color: var(--text); cursor:pointer; }
@@ -206,6 +248,7 @@ textarea { min-height: 96px; resize: vertical; }
 .stack-sm { display: flex; flex-direction: column; gap: 8px; }
 .stack-md { display: flex; flex-direction: column; gap: 12px; }
 .row { display: flex; align-items: center; gap: 10px; }
+.row.row-refresh { justify-content: space-between; align-items: flex-start; }
 .summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .stat { padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); }
 .stat-label { margin: 0 0 4px; color: var(--muted); font-size: 0.85rem; }
@@ -269,4 +312,22 @@ fieldset label + textarea {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* user feedback */
+small { 
+  color: var(--danger); 
+  font-size: 0.85rem; 
+  display: block; 
+  margin-top: 4px;
+}
+
+ .field-group input.ng-invalid.ng-touched,
+.field-group select.ng-invalid.ng-touched,
+.field-group textarea.ng-invalid.ng-touched,
+fieldset input.ng-invalid.ng-touched,
+fieldset select.ng-invalid.ng-touched,
+fieldset textarea.ng-invalid.ng-touched {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.15);
 }

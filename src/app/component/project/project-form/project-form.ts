@@ -1,9 +1,14 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
 import { Project, UpsertProjectCommand } from '../../../model/project.model';
 import { ProjectService } from '../../../service/project-service';
-import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { CoreService } from '../../../service/core-service';
 import { DateType } from '../../../model/core.model';
+
+const trimmedRequired: ValidatorFn = (control) => {
+  const value = (control.value ?? '') as string;
+  return value.trim() ? null : { required: true };
+};
 
 @Component({
   selector: 'app-project-form',
@@ -21,8 +26,8 @@ export class ProjectForm {
 
   form = this.projectService.projectForm();
   additionalFieldForm = this.nfb.group({
-    key: ['', [Validators.required]],
-    value: ['', [Validators.required]],
+    key: ['', [trimmedRequired]],
+    value: ['', [trimmedRequired]],
   });
 
   data = input<Project>();
@@ -33,6 +38,13 @@ export class ProjectForm {
   }
 
   save(): void {
+    const title = this.form.controls.title;
+    const rawTitle = title.value?.trim() ?? '';
+    if (!rawTitle) {
+      title.setErrors({ required: true });
+      this.form.markAllAsTouched();
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -58,6 +70,13 @@ export class ProjectForm {
       return;
     }
 
+    const valueControl = this.additionalFieldForm.controls.value;
+    const value = valueControl.value.trim();
+    if (!value) {
+      valueControl.setErrors({ required: true });
+      return;
+    }
+
     if (this.form.controls.additionalFields.controls[key]) {
       this.additionalFieldForm.controls.key.setErrors({ duplicated: true });
       return;
@@ -65,7 +84,7 @@ export class ProjectForm {
 
     this.form.controls.additionalFields.addControl(
       key,
-      this.nfb.control(this.additionalFieldForm.controls.value.value ?? '')
+      this.nfb.control(value)
     );
     this.additionalFieldForm.reset();
   }
