@@ -38,6 +38,7 @@ export class ProjectForm {
   }
 
   save(): void {
+    // check blank spaces in title
     const title = this.form.controls.title;
     const rawTitle = title.value?.trim() ?? '';
     if (!rawTitle) {
@@ -49,6 +50,8 @@ export class ProjectForm {
       this.form.markAllAsTouched();
       return;
     }
+
+    // normalize dates and emit
     const rawValue = this.form.getRawValue();
     const command: UpsertProjectCommand = {
       ...rawValue,

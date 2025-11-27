@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { NonNullableFormBuilder } from '@angular/forms';
+import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { DateType, DateTypeForm } from '../model/core.model';
 
 @Injectable({
@@ -24,10 +24,14 @@ export class CoreService {
 
   dateTypeForm(data?: DateType): DateTypeForm {
     const today = new Date();
+    const currentYear = today.getFullYear();
+    const minYear = Math.min(currentYear, data?.year ?? currentYear);
+    const maxYear = Math.max(currentYear + 5, data?.year ?? currentYear + 5); // allow future dates up to 5 years ahead
+    const initialYear = data?.year ?? currentYear;
     return this.nfb.group({
-      year: data?.year ?? today.getFullYear(),
-      month: data?.month ?? today.getMonth(),
-      week: data?.week ?? Math.floor(today.getDate() / 8)
+      year: [initialYear, [Validators.min(minYear), Validators.max(maxYear)]],
+      month: [data?.month ?? today.getMonth(), [Validators.min(0), Validators.max(11)]],
+      week: [data?.week ?? Math.floor(today.getDate() / 8), [Validators.min(0), Validators.max(3)]]
     });
   }
 
