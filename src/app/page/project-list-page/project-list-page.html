@@ -6,7 +6,9 @@
         <span class="pill">{{ projectList().length }} total</span>
       </div>
       <div class="form-actions">
-        <button class="btn primary" type="button" (click)="openCreateModal()">+</button>
+        <button class="btn primary" type="button" (click)="openCreateModal()">
+          <img src="/signo-mas-cross-shadow-plus-signo-pegatina.webp" alt="Add project" width="20" height="30" />
+        </button>
         <button class="btn ghost" type="button" (click)="loadProjects()">Refresh</button>
         @if (loading()) {
           <span class="pill">Loading...</span>
