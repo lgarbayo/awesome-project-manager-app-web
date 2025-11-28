@@ -112,6 +112,10 @@ export class ProjectForm {
     this.additionalFieldForm.reset();
   }
 
+  dateRangeError(): boolean {
+    return !!this.form.errors?.['dateRange'] && this.form.touched;
+  }
+
   private normalizeDate(date: DateType): DateType {
     return {
       ...date,
