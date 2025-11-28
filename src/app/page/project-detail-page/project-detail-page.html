@@ -1,19 +1,38 @@
 <section class="stack-md">
+  <!-- project form -->
   @if (project(); as projectDetail) {
-    <article class="card pad stack-md">
-      <div class="row">
-        <div>
-          <h2 class="title">Edit project</h2>
+    <div class="detail-grid">
+      <article class="card pad stack-md project-summary-card">
+        <div class="row row-refresh">
+          <div>
+            <h2 class="title">{{ projectDetail.title }}</h2>
+          </div>
+          <div class="row">
+            <button class="btn ghost" type="button" (click)="openAnalysisModal()">View analysis</button>
+            <button class="btn ghost" type="button" (click)="openProjectModal()">
+              <img src="/4226577.png" alt="Edit project" width="30" height="30" />
+            </button>
+          </div>
         </div>
-      </div>
-      <app-project-form [data]="projectDetail" (edited)="update($event)"></app-project-form>
-    </article>
-
-    <div class="grid two">
-      <article class="card pad stack-md">
+        <p class="muted">{{ projectDetail.description || 'No description available yet.' }}</p>
+        <div class="summary-grid">
+          <div>
+            <p class="summary-label">Start date</p>
+            <p class="summary-value">{{ core.formatDateLabel(projectDetail.startDate) }}</p>
+          </div>
+          <div>
+            <p class="summary-label">End date</p>
+            <p class="summary-value">{{ core.formatDateLabel(projectDetail.endDate) }}</p>
+          </div>
+        </div>
+      </article>
+      <!-- milestones table-->
+      <article class="card pad stack-md table-card">
         <div class="row row-refresh">
           <h2 class="title">Milestones</h2>
-          <button class="btn ghost" type="button" (click)="refreshMilestones()">Refresh</button>
+          <button class="btn primary" type="button" (click)="openMilestoneModal()">
+            <img src="/signo-mas-cross-shadow-plus-signo-pegatina.webp" alt="Add project" width="20" height="30" />
+          </button>
         </div>
         @if (milestoneLoading()) {
           <p>Loading milestones...</p>
@@ -21,121 +40,185 @@
         @if (milestoneError(); as error) {
           <p class="error">{{ error }}</p>
         }
-        @if (selectedMilestone(); as editingMilestone) {
-          <p class="pill warning">Editing: {{ editingMilestone.title }}</p>
-        }
         @if (!milestoneLoading() && milestones().length === 0) {
           <p>No milestones registered yet.</p>
         } @else {
-          <ul class="stack-md">
-            @for (milestone of milestones(); track trackMilestone($index, milestone)) {
-              <li class="task">
-                <div class="row">
-                  <strong>{{ milestone.title }}</strong>
-                  <div class="task-actions">
-                    <button class="btn ghost" type="button" (click)="editMilestone(milestone)">Edit</button>
-                    <button class="btn danger" type="button" (click)="removeMilestone(milestone.uuid)">Delete</button>
-                  </div>
-                </div>
-                <p class="muted">
-                  {{ core.formatDateLabel(milestone.date) }}
-                </p>
-                <p class="note">{{ milestone.description || 'No description.' }}</p>
-              </li>
-            }
-          </ul>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (milestone of milestones(); track trackMilestone($index, milestone)) {
+                  <tr>
+                    <td>{{ milestone.uuid }}</td>
+                    <td>{{ milestone.title }}</td>
+                    <td>{{ core.formatDateLabel(milestone.date) }}</td>
+                    <td class="table-actions">
+                      <button class="btn ghost" type="button" (click)="editMilestone(milestone)">
+                        <img src="/4226577.png" alt="Edit milestone" width="30" height="30" />
+                      </button>
+                      <button class="btn danger" type="button" (click)="removeMilestone(milestone.uuid)">
+                        <img src="/5410466.png" alt="Delete milestone" width="30" height="30" />
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
-        <app-milestone-form
-          #milestoneCreator
-          [data]="selectedMilestone() ?? undefined"
-          (submitted)="saveMilestone($event)"
-          (cancelled)="cancelMilestoneEdition()"
-        ></app-milestone-form>
       </article>
+    </div>
 
-      <article class="card pad stack-md">
-        <div class="row row-refresh">
-          <h2 class="title">Tasks</h2>
-          <button class="btn ghost" type="button" (click)="refreshTasks()">Refresh</button>
-        </div>
+    <article class="card pad stack-md table-card tasks">
+      <div class="row row-refresh">
+        <h2 class="title">Tasks</h2>
+        <button class="btn primary" type="button" (click)="openTaskModal()">
+          <img src="/signo-mas-cross-shadow-plus-signo-pegatina.webp" alt="Add project" width="20" height="30" />
+        </button>
+      </div>
         @if (taskLoading()) {
           <p>Loading tasks...</p>
         }
         @if (taskError(); as error) {
           <p class="error">{{ error }}</p>
         }
-        @if (selectedTask(); as editingTask) {
-          <p class="pill warning">Editing: {{ editingTask.title }}</p>
-        }
-        @if (!taskLoading() && tasks().length === 0) {
-          <p>No tasks registered yet.</p>
-        } @else {
-          <ul class="stack-md">
+    @if (!taskLoading() && tasks().length === 0) {
+      <p>No tasks registered yet.</p>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Duration</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
             @for (task of tasks(); track trackTask($index, task)) {
-              <li class="task">
-                <div class="row">
-                  <strong>{{ task.title }}</strong>
-                  <div class="task-actions">
-                    <button class="btn ghost" type="button" (click)="editTask(task)">Edit</button>
-                    <button class="btn danger" type="button" (click)="removeTask(task.uuid)">Delete</button>
-                  </div>
-                </div>
-                <p class="muted">
-                  {{ core.formatDateLabel(task.startDate) }} · {{ task.durationWeeks }} weeks
-                </p>
-                <p class="note">{{ task.description || 'No description.' }}</p>
-              </li>
+              <tr>
+                <td>{{ task.title }}</td>
+                <td>{{ task.durationWeeks }} weeks</td>
+                <td class="table-actions">
+                  <button class="btn ghost" type="button" (click)="editTask(task)">
+                    <img src="/4226577.png" alt="Edit task" width="30" height="30" />
+                  </button>
+                  <button class="btn danger" type="button" (click)="removeTask(task.uuid)">
+                    <img src="/5410466.png" alt="Delete task" width="30" height="30" />
+                  </button>
+                </td>
+              </tr>
             }
-          </ul>
-        }
-        <app-task-form
-          #taskCreator
-          [data]="selectedTask() ?? undefined"
-          (submitted)="saveTask($event)"
-          (cancelled)="cancelTaskEdition()"
-        ></app-task-form>
-      </article>
-    </div>
-
-    <article class="card pad stack-md">
-      <div class="row row-refresh">
-        <h2 class="title">Project analysis</h2>
-        <button class="btn ghost" type="button" (click)="refreshAnalysis()">Refresh</button>
+          </tbody>
+        </table>
       </div>
-      @if (analysisLoading()) {
-        <p>Loading analysis...</p>
-      }
-      @if (analysisError(); as error) {
-        <p class="error">{{ error }}</p>
-      }
-      @if (analysis(); as data) {
-        <div class="analysis stack-md">
-          @for (milestoneAnalysis of data.milestoneList; track milestoneAnalysis.milestoneUuid) {
-            <article class="task">
-              <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
-              <p class="muted">
-                {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
-                {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
-              </p>
-              <p>
-                Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-                {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
-              </p>
-              <ul class="stack-sm">
-                @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
-                  <li>
-                    {{ taskAnalysis.taskTitle }} · {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-                    {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
-                  </li>
-                }
-              </ul>
-            </article>
-          }
-        </div>
-      } @else if (!analysisLoading()) {
-        <p>No analysis data yet.</p>
-      }
+    }
     </article>
+
+    @if (showProjectModal()) {
+      <div class="modal-backdrop" (click)="closeProjectModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">Edit project</h2>
+            <button class="btn ghost" type="button" (click)="closeProjectModal()">Close</button>
+          </div>
+          <div class="modal-body">
+            <app-project-form [data]="projectDetail" (edited)="update($event)"></app-project-form>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showMilestoneModal()) {
+      <div class="modal-backdrop" (click)="cancelMilestoneEdition()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">{{ selectedMilestone() ? 'Edit milestone' : 'New milestone' }}</h2>
+            <button class="btn ghost" type="button" (click)="cancelMilestoneEdition()">Close</button>
+          </div>
+          <div class="modal-body">
+            <app-milestone-form
+              #milestoneCreator
+              [data]="selectedMilestone() ?? undefined"
+              (submitted)="saveMilestone($event)"
+              (cancelled)="cancelMilestoneEdition()"
+            ></app-milestone-form>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showTaskModal()) {
+      <div class="modal-backdrop" (click)="cancelTaskEdition()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">{{ selectedTask() ? 'Edit task' : 'New task' }}</h2>
+            <button class="btn ghost" type="button" (click)="cancelTaskEdition()">Close</button>
+          </div>
+          <div class="modal-body">
+            <app-task-form
+              #taskCreator
+              [data]="selectedTask() ?? undefined"
+              (submitted)="saveTask($event)"
+              (cancelled)="cancelTaskEdition()"
+            ></app-task-form>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showAnalysisModal()) {
+      <div class="modal-backdrop" (click)="closeAnalysisModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">Project analysis</h2>
+            <button class="btn ghost" type="button" (click)="closeAnalysisModal()">Close</button>
+          </div>
+          <div class="modal-body">
+            @if (analysisLoading()) {
+              <p>Loading analysis...</p>
+            }
+            @if (analysisError(); as error) {
+              <p class="error">{{ error }}</p>
+            }
+            @if (analysis(); as data) {
+              <div class="analysis stack-md">
+                @for (milestoneAnalysis of data.milestoneList; track milestoneAnalysis.milestoneUuid) {
+                  <article class="task">
+                    <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
+                    <p class="muted">
+                      {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
+                      {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
+                    </p>
+                    <p>
+                      Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+                      {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                    </p>
+                    <ul class="stack-sm">
+                      @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
+                        <li>
+                          {{ taskAnalysis.taskTitle }} · {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+                          {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                        </li>
+                      }
+                    </ul>
+                  </article>
+                }
+              </div>
+            } @else if (!analysisLoading()) {
+              <p>No analysis data yet.</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
   } @else {
     <article class="card pad">
       <p>Select a project from the list to keep working.</p>

@@ -61,6 +61,10 @@ export class ProjectDetailPage {
   taskError = signal<string | null>(null);
   analysisLoading = signal(false);
   analysisError = signal<string | null>(null);
+  showProjectModal = signal(false);
+  showMilestoneModal = signal(false);
+  showTaskModal = signal(false);
+  showAnalysisModal = signal(false);
 
   constructor() {
     effect(() => {
@@ -83,12 +87,38 @@ export class ProjectDetailPage {
       next: (updated) => {
         this.project.set(updated);
         this.projectError.set(null);
+        this.showProjectModal.set(false);
       },
       error: (error) => {
         console.error('Error updating project', error);
         this.projectError.set("Couldn't update the project.");
       },
     });
+  }
+  openProjectModal(): void {
+    this.showProjectModal.set(true);
+  }
+
+  closeProjectModal(): void {
+    this.showProjectModal.set(false);
+  }
+
+  openMilestoneModal(milestone?: Milestone): void {
+    this.selectedMilestone.set(milestone ?? null);
+    this.showMilestoneModal.set(true);
+  }
+
+  openTaskModal(task?: Task): void {
+    this.selectedTask.set(task ?? null);
+    this.showTaskModal.set(true);
+  }
+
+  openAnalysisModal(): void {
+    this.showAnalysisModal.set(true);
+  }
+
+  closeAnalysisModal(): void {
+    this.showAnalysisModal.set(false);
   }
 
   saveMilestone(command: UpsertMilestoneCommand): void {
@@ -108,6 +138,7 @@ export class ProjectDetailPage {
         this.selectedMilestone.set(null);
         this.loadMilestones(projectUuid);
         this.loadAnalysis(projectUuid);
+        this.showMilestoneModal.set(false);
       },
       error: (error) => {
         console.error('Error saving milestone', error);
@@ -128,6 +159,7 @@ export class ProjectDetailPage {
         if (this.selectedMilestone()?.uuid === milestoneUuid) {
           this.selectedMilestone.set(null);
           this.milestoneForm?.resetForm();
+          this.showMilestoneModal.set(false);
         }
         this.loadMilestones(projectUuid);
         this.loadAnalysis(projectUuid);
@@ -141,12 +173,13 @@ export class ProjectDetailPage {
   }
 
   editMilestone(milestone: Milestone): void {
-    this.selectedMilestone.set(milestone);
+    this.openMilestoneModal(milestone);
   }
 
   cancelMilestoneEdition(): void {
     this.selectedMilestone.set(null);
     this.milestoneForm?.resetForm();
+    this.showMilestoneModal.set(false);
   }
 
   saveTask(command: UpsertTaskCommand): void {
@@ -166,6 +199,7 @@ export class ProjectDetailPage {
         this.selectedTask.set(null);
         this.loadTasks(projectUuid);
         this.loadAnalysis(projectUuid);
+        this.showTaskModal.set(false);
       },
       error: (error) => {
         console.error('Error saving task', error);
@@ -186,6 +220,7 @@ export class ProjectDetailPage {
         if (this.selectedTask()?.uuid === taskUuid) {
           this.selectedTask.set(null);
           this.taskForm?.resetForm();
+          this.showTaskModal.set(false);
         }
         this.loadTasks(projectUuid);
         this.loadAnalysis(projectUuid);
@@ -199,33 +234,13 @@ export class ProjectDetailPage {
   }
 
   editTask(task: Task): void {
-    this.selectedTask.set(task);
+    this.openTaskModal(task);
   }
 
   cancelTaskEdition(): void {
     this.selectedTask.set(null);
     this.taskForm?.resetForm();
-  }
-
-  refreshAnalysis(): void {
-    const projectUuid = this.projectUuid();
-    if (projectUuid) {
-      this.loadAnalysis(projectUuid);
-    }
-  }
-
-  refreshMilestones(): void {
-    const projectUuid = this.projectUuid();
-    if (projectUuid) {
-      this.loadMilestones(projectUuid);
-    }
-  }
-
-  refreshTasks(): void {
-    const projectUuid = this.projectUuid();
-    if (projectUuid) {
-      this.loadTasks(projectUuid);
-    }
+    this.showTaskModal.set(false);
   }
 
   // same as trackBy function in *ngFor:
@@ -262,7 +277,7 @@ export class ProjectDetailPage {
     this.milestoneLoading.set(true);
     this.milestoneService.list(projectUuid).subscribe({
       next: (milestones) => {
-        this.milestones.set(milestones);
+        this.milestones.set(this.sortMilestonesByDate(milestones));
         this.milestoneError.set(null);
       },
       error: (error) => {
@@ -289,6 +304,14 @@ export class ProjectDetailPage {
         this.taskLoading.set(false);
       },
       complete: () => this.taskLoading.set(false),
+    });
+  }
+
+  private sortMilestonesByDate(list: Array<Milestone>): Array<Milestone> {
+    return [...list].sort((a, b) => {
+      if (a.date.year !== b.date.year) return a.date.year - b.date.year;
+      if (a.date.month !== b.date.month) return a.date.month - b.date.month;
+      return a.date.week - b.date.week;
     });
   }
 
