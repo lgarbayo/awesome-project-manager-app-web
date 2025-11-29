@@ -47,7 +47,6 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Title</th>
                   <th>Date</th>
                   <th></th>
@@ -56,7 +55,6 @@
               <tbody>
                 @for (milestone of milestones(); track trackMilestone($index, milestone)) {
                   <tr>
-                    <td>{{ milestone.uuid }}</td>
                     <td>{{ milestone.title }}</td>
                     <td>{{ core.formatDateLabel(milestone.date) }}</td>
                     <td class="table-actions">
