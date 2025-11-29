@@ -179,6 +179,7 @@ textarea { min-height: 96px; resize: vertical; }
 }
 .modal-body {
   padding: 20px;
+  word-break: break-word;
 }
 
 @keyframes fadeIn {

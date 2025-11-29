@@ -58,6 +58,7 @@
                     <td>{{ milestone.title }}</td>
                     <td>{{ core.formatDateLabel(milestone.date) }}</td>
                     <td class="table-actions">
+                      <button class="btn ghost" type="button" (click)="openMilestoneDescription(milestone)">DESCRIPTION</button>
                       <button class="btn ghost" type="button" (click)="openMilestoneAnalysis(milestone.uuid)">ANALYSIS</button>
                       <button class="btn ghost icon-only" type="button" (click)="editMilestone(milestone)">
                         <img src="/edit.svg" alt="Edit milestone" width="20" height="20" />
@@ -106,6 +107,7 @@
                 <td>{{ task.title }}</td>
                 <td>{{ task.durationWeeks }} weeks</td>
                 <td class="table-actions">
+                  <button class="btn ghost" type="button" (click)="openTaskDescription(task)">DESCRIPTION</button>
                   <button class="btn ghost" type="button" (click)="openTaskAnalysis(task.uuid)">ANALYSIS</button>
                   <button class="btn ghost icon-only" type="button" (click)="editTask(task)">
                     <img src="/edit.svg" alt="Edit task" width="20" height="20" />
@@ -287,6 +289,34 @@
               </span>
               <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
             </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showMilestoneDescriptionModal() && selectedMilestoneDescription(); as milestoneDescription) {
+      <div class="modal-backdrop" (click)="closeMilestoneDescription()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">{{ milestoneDescription.title }} description</h2>
+            <button class="btn ghost" type="button" (click)="closeMilestoneDescription()">Close</button>
+          </div>
+          <div class="modal-body">
+            <p>{{ milestoneDescription.description || 'No description.' }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showTaskDescriptionModal() && selectedTaskDescription(); as taskDescription) {
+      <div class="modal-backdrop" (click)="closeTaskDescription()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">{{ taskDescription.title }} description</h2>
+            <button class="btn ghost" type="button" (click)="closeTaskDescription()">Close</button>
+          </div>
+          <div class="modal-body">
+            <p>{{ taskDescription.description || 'No description.' }}</p>
           </div>
         </div>
       </div>

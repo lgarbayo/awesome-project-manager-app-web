@@ -50,7 +50,9 @@ export class ProjectDetailPage {
   tasks = signal<Array<Task>>([]);
   analysis = signal<ProjectAnalysis | undefined>(undefined);
   selectedMilestoneAnalysis = signal<MilestoneAnalysis | null>(null);
+  selectedMilestoneDescription = signal<Milestone | null>(null);
   selectedTaskAnalysis = signal<TaskAnalysis | null>(null);
+  selectedTaskDescription = signal<Task | null>(null);
 
   selectedMilestone = signal<Milestone | null>(null);
   selectedTask = signal<Task | null>(null);
@@ -69,6 +71,8 @@ export class ProjectDetailPage {
   showAnalysisModal = signal(false);
   showMilestoneAnalysisModal = signal(false);
   showTaskAnalysisModal = signal(false);
+  showMilestoneDescriptionModal = signal(false);
+  showTaskDescriptionModal = signal(false);
 
   constructor() {
     effect(() => {
@@ -143,6 +147,16 @@ export class ProjectDetailPage {
     this.showMilestoneAnalysisModal.set(false);
   }
 
+  openMilestoneDescription(milestone: Milestone): void {
+    this.selectedMilestoneDescription.set(milestone);
+    this.showMilestoneDescriptionModal.set(true);
+  }
+
+  closeMilestoneDescription(): void {
+    this.selectedMilestoneDescription.set(null);
+    this.showMilestoneDescriptionModal.set(false);
+  }
+
   openTaskAnalysis(taskUuid: string): void {
     const analysis = this.selectedMilestoneAnalysis();
     if (!analysis) {
@@ -179,6 +193,16 @@ export class ProjectDetailPage {
   closeTaskAnalysisModal(): void {
     this.selectedTaskAnalysis.set(null);
     this.showTaskAnalysisModal.set(false);
+  }
+
+  openTaskDescription(task: Task): void {
+    this.selectedTaskDescription.set(task);
+    this.showTaskDescriptionModal.set(true);
+  }
+
+  closeTaskDescription(): void {
+    this.selectedTaskDescription.set(null);
+    this.showTaskDescriptionModal.set(false);
   }
 
   saveMilestone(command: UpsertMilestoneCommand): void {
