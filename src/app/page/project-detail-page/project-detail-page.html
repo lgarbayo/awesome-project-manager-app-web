@@ -242,11 +242,20 @@
             @if (milestoneAnalysis.taskList.length === 0) {
               <p>No task analysis available.</p>
             } @else {
-              <ul class="stack-sm">
+              <ul class="stack-sm analysis-list">
                 @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
-                  <li>
-                    {{ taskAnalysis.taskTitle }} · {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-                    {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                  <li class="analysis-item">
+                    <span>{{ taskAnalysis.taskTitle }}</span>
+                    <span
+                      class="analysis-chip"
+                      [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+                    >
+                      <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
+                      <span class="chip-arrow">
+                        {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
+                      </span>
+                      <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
+                    </span>
                   </li>
                 }
               </ul>
@@ -265,10 +274,17 @@
           </div>
           <div class="modal-body">
             <h3>{{ taskAnalysis.taskTitle }}</h3>
-            <p>
-              Progress: {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-              {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
-            </p>
+            <p class="muted">Task progress</p>
+            <div
+              class="analysis-chip"
+              [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+            >
+              <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
+              <span class="chip-arrow">
+                {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
+              </span>
+              <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
+            </div>
           </div>
         </div>
       </div>
