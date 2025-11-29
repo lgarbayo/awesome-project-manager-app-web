@@ -32,6 +32,7 @@ export class ProjectForm {
 
   data = input<Project>();
   edited = output<UpsertProjectCommand>();
+  cancelled = output<void>();
 
   constructor() {
     effect(() => this.resetFormState(this.data()));
@@ -103,8 +104,8 @@ export class ProjectForm {
     }));
   }
 
-  resetForm(): void {
-    this.resetFormState(this.data());
+  cancelProjectEdition(): void {
+    this.cancelled.emit();
   }
 
   private resetFormState(project?: Project): void {

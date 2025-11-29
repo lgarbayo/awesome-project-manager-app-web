@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="ui_blue_grad" x1="0" y1="64" x2="64" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#005bea"/>
+            <stop offset="1" stop-color="#00c6fb"/>
+        </linearGradient>
+        <linearGradient id="ui_accent_grad" x1="20" y1="44" x2="44" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffba00"/>
+            <stop offset="1" stop-color="#ff5e00"/>
+        </linearGradient>
+    </defs>
+
+    <rect x="28" y="10" width="8" height="44" rx="4" fill="url(#ui_blue_grad)"/>
+    <rect x="10" y="28" width="44" height="8" rx="4" fill="url(#ui_blue_grad)"/>
+
+    <rect x="28" y="28" width="8" height="8" rx="2" fill="url(#ui_accent_grad)"/>
+</svg>

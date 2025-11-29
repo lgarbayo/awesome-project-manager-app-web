@@ -1,0 +1,18 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="ui_blue_grad_2" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#005bea"/>
+            <stop offset="1" stop-color="#00c6fb"/>
+        </linearGradient>
+        <linearGradient id="ui_accent_grad_2" x1="10" y1="54" x2="25" y2="40" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffba00"/>
+            <stop offset="1" stop-color="#ff5e00"/>
+        </linearGradient>
+    </defs>
+
+    <path d="M46.5 6.5C49.5 3.5 54.5 3.5 57.5 6.5C60.5 9.5 60.5 14.5 57.5 17.5L24 51L13 62L2 51L13 40L46.5 6.5Z" fill="url(#ui_blue_grad_2)"/>
+
+    <path d="M2 51L13 62L16 56L8 48L2 51Z" fill="url(#ui_accent_grad_2)"/>
+
+    <path d="M42 16L48 22" stroke="white" stroke-opacity="0.3" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -6,8 +6,8 @@
         <span class="pill">{{ projectList().length }} total</span>
       </div>
       <div class="form-actions">
-        <button class="btn primary" type="button" (click)="openCreateModal()">
-          <img src="/signo-mas-cross-shadow-plus-signo-pegatina.webp" alt="Add project" width="20" height="30" />
+        <button class="btn primary icon-only" type="button" (click)="openCreateModal()">
+          <img src="/add.svg" alt="Add project" width="24" height="24" />
         </button>
         @if (loading()) {
           <span class="pill">Loading...</span>
@@ -32,9 +32,9 @@
               </p>
             </div>
             <div class="project-actions">
-              <a class="btn ghost" [routerLink]="['..', 'project', project.uuid]">View details</a>
-              <button class="btn danger" type="button" (click)="deleteProject(project.uuid)">
-                <img src="/5410466.png" alt="Delete project" width="30" height="30" />
+              <a class="btn ghost" [routerLink]="['..', 'project', project.uuid]">DETAILS</a>
+              <button class="btn danger icon-only" type="button" (click)="deleteProject(project.uuid)">
+                <img src="/trash.svg" alt="Delete project" width="20" height="20" />
               </button>
             </div>
           </article>
@@ -51,7 +51,7 @@
           <button class="btn ghost" type="button" (click)="closeCreateModal()">Close</button>
         </div>
         <div class="modal-body">
-          <app-project-form (edited)="createProject($event)"></app-project-form>
+          <app-project-form (edited)="createProject($event)" (cancelled)="closeCreateModal()"></app-project-form>
         </div>
       </div>
     </div>

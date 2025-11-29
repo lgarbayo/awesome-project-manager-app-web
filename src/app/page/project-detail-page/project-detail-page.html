@@ -7,12 +7,6 @@
           <div>
             <h2 class="title">{{ projectDetail.title }}</h2>
           </div>
-          <div class="row">
-            <button class="btn ghost" type="button" (click)="openAnalysisModal()">View analysis</button>
-            <button class="btn ghost" type="button" (click)="openProjectModal()">
-              <img src="/4226577.png" alt="Edit project" width="30" height="30" />
-            </button>
-          </div>
         </div>
         <p class="muted">{{ projectDetail.description || 'No description available yet.' }}</p>
         <div class="summary-grid">
@@ -25,13 +19,19 @@
             <p class="summary-value">{{ core.formatDateLabel(projectDetail.endDate) }}</p>
           </div>
         </div>
+        <div class="row project-actions-row">
+          <button class="btn ghost" type="button" (click)="openAnalysisModal()">ANALYSIS</button>
+          <button class="btn ghost icon-only" type="button" (click)="openProjectModal()">
+            <img src="/edit.svg" alt="Edit project" width="20" height="20" />
+          </button>
+        </div>
       </article>
       <!-- milestones table-->
       <article class="card pad stack-md table-card">
         <div class="row row-refresh">
           <h2 class="title">Milestones</h2>
-          <button class="btn primary" type="button" (click)="openMilestoneModal()">
-            <img src="/signo-mas-cross-shadow-plus-signo-pegatina.webp" alt="Add project" width="20" height="30" />
+          <button class="btn primary icon-only" type="button" (click)="openMilestoneModal()">
+            <img src="/add.svg" alt="Add milestone" width="24" height="24" />
           </button>
         </div>
         @if (milestoneLoading()) {
@@ -58,12 +58,12 @@
                     <td>{{ milestone.title }}</td>
                     <td>{{ core.formatDateLabel(milestone.date) }}</td>
                     <td class="table-actions">
-                      <button class="btn ghost" type="button" (click)="openMilestoneAnalysis(milestone.uuid)">View analysis</button>
-                      <button class="btn ghost" type="button" (click)="editMilestone(milestone)">
-                        <img src="/4226577.png" alt="Edit milestone" width="30" height="30" />
+                      <button class="btn ghost" type="button" (click)="openMilestoneAnalysis(milestone.uuid)">ANALYSIS</button>
+                      <button class="btn ghost icon-only" type="button" (click)="editMilestone(milestone)">
+                        <img src="/edit.svg" alt="Edit milestone" width="20" height="20" />
                       </button>
-                      <button class="btn danger" type="button" (click)="removeMilestone(milestone.uuid)">
-                        <img src="/5410466.png" alt="Delete milestone" width="30" height="30" />
+                      <button class="btn danger icon-only" type="button" (click)="removeMilestone(milestone.uuid)">
+                        <img src="/trash.svg" alt="Delete milestone" width="20" height="20" />
                       </button>
                     </td>
                   </tr>
@@ -78,8 +78,8 @@
     <article class="card pad stack-md table-card tasks">
       <div class="row row-refresh">
         <h2 class="title">Tasks</h2>
-        <button class="btn primary" type="button" (click)="openTaskModal()">
-          <img src="/signo-mas-cross-shadow-plus-signo-pegatina.webp" alt="Add project" width="20" height="30" />
+        <button class="btn primary icon-only" type="button" (click)="openTaskModal()">
+          <img src="/add.svg" alt="Add task" width="24" height="24" />
         </button>
       </div>
         @if (taskLoading()) {
@@ -106,12 +106,12 @@
                 <td>{{ task.title }}</td>
                 <td>{{ task.durationWeeks }} weeks</td>
                 <td class="table-actions">
-                  <button class="btn ghost" type="button" (click)="openTaskAnalysis(task.uuid)">View analysis</button>
-                  <button class="btn ghost" type="button" (click)="editTask(task)">
-                    <img src="/4226577.png" alt="Edit task" width="30" height="30" />
+                  <button class="btn ghost" type="button" (click)="openTaskAnalysis(task.uuid)">ANALYSIS</button>
+                  <button class="btn ghost icon-only" type="button" (click)="editTask(task)">
+                    <img src="/edit.svg" alt="Edit task" width="20" height="20" />
                   </button>
-                  <button class="btn danger" type="button" (click)="removeTask(task.uuid)">
-                    <img src="/5410466.png" alt="Delete task" width="30" height="30" />
+                  <button class="btn danger icon-only" type="button" (click)="removeTask(task.uuid)">
+                    <img src="/trash.svg" alt="Delete task" width="20" height="20" />
                   </button>
                 </td>
               </tr>
@@ -130,7 +130,11 @@
             <button class="btn ghost" type="button" (click)="closeProjectModal()">Close</button>
           </div>
           <div class="modal-body">
-            <app-project-form [data]="projectDetail" (edited)="update($event)"></app-project-form>
+            <app-project-form
+              [data]="projectDetail"
+              (edited)="update($event)"
+              (cancelled)="closeProjectModal()"
+            ></app-project-form>
           </div>
         </div>
       </div>

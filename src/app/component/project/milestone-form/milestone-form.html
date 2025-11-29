@@ -11,21 +11,29 @@
 
   <fieldset formGroupName="date">
     <legend>Target date</legend>
-    <label>Year</label>
-    <input type="number" formControlName="year" />
-    <label>Month</label>
-    <select formControlName="month">
-      @for (month of core.monthNames; track month; let idx = $index) {
-        <option [value]="idx">{{ month }}</option>
-      }
-    </select>
-    <label>Week</label>
-    <select formControlName="week">
-      <option [value]="0">Week 1</option>
-      <option [value]="1">Week 2</option>
-      <option [value]="2">Week 3</option>
-      <option [value]="3">Week 4</option>
-    </select>
+    <div class="fieldset-grid">
+      <div class="field-group">
+        <label>Year</label>
+        <input type="number" formControlName="year" />
+      </div>
+      <div class="field-group">
+        <label>Month</label>
+        <select formControlName="month">
+          @for (month of core.monthNames; track month; let idx = $index) {
+            <option [value]="idx">{{ month }}</option>
+          }
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Week</label>
+        <select formControlName="week">
+          <option [value]="0">Week 1</option>
+          <option [value]="1">Week 2</option>
+          <option [value]="2">Week 3</option>
+          <option [value]="3">Week 4</option>
+        </select>
+      </div>
+    </div>
   </fieldset>
 
   <div class="form-actions">

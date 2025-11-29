@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ProjectService } from '../../service/project-service';
 import { Project, UpsertProjectCommand } from '../../model/project.model';
 import { RouterLink } from '@angular/router';
@@ -18,7 +18,6 @@ import { CoreService } from '../../service/core-service';
 export class ProjectListPage implements OnInit {
   private projectService = inject(ProjectService);
   protected core = inject(CoreService);
-  @ViewChild(ProjectForm) projectFormComponent?: ProjectForm;
 
   projectList = signal<Array<Project>>([]);
   loading = signal(false);
@@ -49,7 +48,6 @@ export class ProjectListPage implements OnInit {
     this.loading.set(true);
     this.projectService.createProject(command).subscribe({
       next: () => {
-        this.projectFormComponent?.resetForm();
         this.closeCreateModal();
         this.loadProjects();
       },
@@ -66,7 +64,6 @@ export class ProjectListPage implements OnInit {
   }
 
   closeCreateModal(): void {
-    this.projectFormComponent?.resetForm();
     this.showCreateModal.set(false);
   }
 

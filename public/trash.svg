@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="ui_blue_grad_3" x1="10" y1="60" x2="54" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#005bea"/>
+            <stop offset="1" stop-color="#00c6fb"/>
+        </linearGradient>
+        <linearGradient id="ui_accent_grad_3" x1="28" y1="14" x2="36" y2="6" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffba00"/>
+            <stop offset="1" stop-color="#ff5e00"/>
+        </linearGradient>
+    </defs>
+
+    <path d="M14 18H50L46 56C45.8 59.3 43 62 39.6 62H24.4C21 62 18.2 59.3 18 56L14 18Z" fill="url(#ui_blue_grad_3)"/>
+
+    <path d="M10 14H54C56.2 14 58 12.2 58 10C58 7.8 56.2 6 54 6H42L40 4C39 2 37 1 35 1H29C27 1 25 2 24 4L22 6H10C7.8 6 6 7.8 6 10C6 12.2 7.8 14 10 14Z" fill="url(#ui_blue_grad_3)"/>
+
+    <rect x="27" y="5" width="10" height="3" rx="1.5" fill="url(#ui_accent_grad_3)"/>
+
+    <path d="M24 28V52M32 28V52M40 28V52" stroke="white" stroke-opacity="0.2" stroke-width="2" stroke-linecap="round"/>
+</svg>
