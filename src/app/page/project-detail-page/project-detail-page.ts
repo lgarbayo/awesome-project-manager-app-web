@@ -10,7 +10,7 @@ import { Task, UpsertTaskCommand } from '../../model/task.model';
 import { MilestoneService } from '../../service/milestone-service';
 import { TaskService } from '../../service/task-service';
 import { AnalysisService } from '../../service/analysis-service';
-import { MilestoneAnalysis, ProjectAnalysis } from '../../model/analysis.model';
+import { MilestoneAnalysis, ProjectAnalysis, TaskAnalysis } from '../../model/analysis.model';
 import { ProjectForm } from '../../component/project/project-form/project-form';
 import { MilestoneForm } from '../../component/project/milestone-form/milestone-form';
 import { TaskForm } from '../../component/project/task-form/task-form';
@@ -50,6 +50,7 @@ export class ProjectDetailPage {
   tasks = signal<Array<Task>>([]);
   analysis = signal<ProjectAnalysis | undefined>(undefined);
   selectedMilestoneAnalysis = signal<MilestoneAnalysis | null>(null);
+  selectedTaskAnalysis = signal<TaskAnalysis | null>(null);
 
   selectedMilestone = signal<Milestone | null>(null);
   selectedTask = signal<Task | null>(null);
@@ -67,6 +68,7 @@ export class ProjectDetailPage {
   showTaskModal = signal(false);
   showAnalysisModal = signal(false);
   showMilestoneAnalysisModal = signal(false);
+  showTaskAnalysisModal = signal(false);
 
   constructor() {
     effect(() => {
@@ -139,6 +141,44 @@ export class ProjectDetailPage {
   closeMilestoneAnalysisModal(): void {
     this.selectedMilestoneAnalysis.set(null);
     this.showMilestoneAnalysisModal.set(false);
+  }
+
+  openTaskAnalysis(taskUuid: string): void {
+    const analysis = this.selectedMilestoneAnalysis();
+    if (!analysis) {
+      const projectAnalysis = this.analysis();
+      if (!projectAnalysis) return;
+      for (const milestone of projectAnalysis.milestoneList) {
+        const foundTask = milestone.taskList.find((task) => task.taskUuid === taskUuid);
+        if (foundTask) {
+          this.selectedTaskAnalysis.set(foundTask);
+          this.showTaskAnalysisModal.set(true);
+          return;
+        }
+      }
+      return;
+    }
+    const taskDetail = analysis.taskList.find((task) => task.taskUuid === taskUuid);
+    if (!taskDetail) {
+      const projectAnalysis = this.analysis();
+      if (!projectAnalysis) return;
+      for (const milestone of projectAnalysis.milestoneList) {
+        const foundTask = milestone.taskList.find((task) => task.taskUuid === taskUuid);
+        if (foundTask) {
+          this.selectedTaskAnalysis.set(foundTask);
+          this.showTaskAnalysisModal.set(true);
+          return;
+        }
+      }
+      return;
+    }
+    this.selectedTaskAnalysis.set(taskDetail);
+    this.showTaskAnalysisModal.set(true);
+  }
+
+  closeTaskAnalysisModal(): void {
+    this.selectedTaskAnalysis.set(null);
+    this.showTaskAnalysisModal.set(false);
   }
 
   saveMilestone(command: UpsertMilestoneCommand): void {

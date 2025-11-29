@@ -108,6 +108,7 @@
                 <td>{{ task.title }}</td>
                 <td>{{ task.durationWeeks }} weeks</td>
                 <td class="table-actions">
+                  <button class="btn ghost" type="button" (click)="openTaskAnalysis(task.uuid)">View analysis</button>
                   <button class="btn ghost" type="button" (click)="editTask(task)">
                     <img src="/4226577.png" alt="Edit task" width="30" height="30" />
                   </button>
@@ -250,6 +251,24 @@
                 }
               </ul>
             }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showTaskAnalysisModal() && selectedTaskAnalysis(); as taskAnalysis) {
+      <div class="modal-backdrop" (click)="closeTaskAnalysisModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">Task analysis</h2>
+            <button class="btn ghost" type="button" (click)="closeTaskAnalysisModal()">Close</button>
+          </div>
+          <div class="modal-body">
+            <h3>{{ taskAnalysis.taskTitle }}</h3>
+            <p>
+              Progress: {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+              {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+            </p>
           </div>
         </div>
       </div>
