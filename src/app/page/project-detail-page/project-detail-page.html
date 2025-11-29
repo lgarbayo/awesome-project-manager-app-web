@@ -60,6 +60,7 @@
                     <td>{{ milestone.title }}</td>
                     <td>{{ core.formatDateLabel(milestone.date) }}</td>
                     <td class="table-actions">
+                      <button class="btn ghost" type="button" (click)="openMilestoneAnalysis(milestone.uuid)">View analysis</button>
                       <button class="btn ghost" type="button" (click)="editMilestone(milestone)">
                         <img src="/4226577.png" alt="Edit milestone" width="30" height="30" />
                       </button>
@@ -214,6 +215,40 @@
               </div>
             } @else if (!analysisLoading()) {
               <p>No analysis data yet.</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showMilestoneAnalysisModal() && selectedMilestoneAnalysis(); as milestoneAnalysis) {
+      <div class="modal-backdrop" (click)="closeMilestoneAnalysisModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">Milestone analysis</h2>
+            <button class="btn ghost" type="button" (click)="closeMilestoneAnalysisModal()">Close</button>
+          </div>
+          <div class="modal-body">
+            <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
+            <p class="muted">
+              {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
+              {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
+            </p>
+            <p>
+              Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+              {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+            </p>
+            @if (milestoneAnalysis.taskList.length === 0) {
+              <p>No task analysis available.</p>
+            } @else {
+              <ul class="stack-sm">
+                @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
+                  <li>
+                    {{ taskAnalysis.taskTitle }} · {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+                    {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                  </li>
+                }
+              </ul>
             }
           </div>
         </div>

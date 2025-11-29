@@ -10,7 +10,7 @@ import { Task, UpsertTaskCommand } from '../../model/task.model';
 import { MilestoneService } from '../../service/milestone-service';
 import { TaskService } from '../../service/task-service';
 import { AnalysisService } from '../../service/analysis-service';
-import { ProjectAnalysis } from '../../model/analysis.model';
+import { MilestoneAnalysis, ProjectAnalysis } from '../../model/analysis.model';
 import { ProjectForm } from '../../component/project/project-form/project-form';
 import { MilestoneForm } from '../../component/project/milestone-form/milestone-form';
 import { TaskForm } from '../../component/project/task-form/task-form';
@@ -49,6 +49,7 @@ export class ProjectDetailPage {
   milestones = signal<Array<Milestone>>([]);
   tasks = signal<Array<Task>>([]);
   analysis = signal<ProjectAnalysis | undefined>(undefined);
+  selectedMilestoneAnalysis = signal<MilestoneAnalysis | null>(null);
 
   selectedMilestone = signal<Milestone | null>(null);
   selectedTask = signal<Task | null>(null);
@@ -65,6 +66,7 @@ export class ProjectDetailPage {
   showMilestoneModal = signal(false);
   showTaskModal = signal(false);
   showAnalysisModal = signal(false);
+  showMilestoneAnalysisModal = signal(false);
 
   constructor() {
     effect(() => {
@@ -119,6 +121,24 @@ export class ProjectDetailPage {
 
   closeAnalysisModal(): void {
     this.showAnalysisModal.set(false);
+  }
+
+  openMilestoneAnalysis(milestoneUuid: string): void {
+    const data = this.analysis();
+    if (!data) {
+      return;
+    }
+    const detail = data.milestoneList.find((item) => item.milestoneUuid === milestoneUuid);
+    if (!detail) {
+      return;
+    }
+    this.selectedMilestoneAnalysis.set(detail);
+    this.showMilestoneAnalysisModal.set(true);
+  }
+
+  closeMilestoneAnalysisModal(): void {
+    this.selectedMilestoneAnalysis.set(null);
+    this.showMilestoneAnalysisModal.set(false);
   }
 
   saveMilestone(command: UpsertMilestoneCommand): void {
