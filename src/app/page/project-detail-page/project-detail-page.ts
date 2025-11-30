@@ -15,7 +15,9 @@ import { ProjectForm } from '../../component/project/project-form/project-form';
 import { MilestoneForm } from '../../component/project/milestone-form/milestone-form';
 import { TaskForm } from '../../component/project/task-form/task-form';
 import { CoreService } from '../../service/core-service';
+import { DateType } from '../../model/core.model';
 
+type TimelineWeek = { label: string; start: number; end: number };
 @Component({
   selector: 'app-project-detail-page',
   standalone: true,
@@ -73,6 +75,10 @@ export class ProjectDetailPage {
   showTaskAnalysisModal = signal(false);
   showMilestoneDescriptionModal = signal(false);
   showTaskDescriptionModal = signal(false);
+
+  private taskTimelineStart = 0;
+  private taskTimelineDuration = 1;
+  taskTimelineWeeks = signal<Array<TimelineWeek>>([]);
 
   constructor() {
     effect(() => {
@@ -380,6 +386,7 @@ export class ProjectDetailPage {
       next: (tasks) => {
         this.tasks.set(tasks);
         this.taskError.set(null);
+        this.computeTaskTimeline(tasks);
       },
       error: (error) => {
         console.error('Unable to load tasks', error);
@@ -414,5 +421,94 @@ export class ProjectDetailPage {
       },
       complete: () => this.analysisLoading.set(false),
     });
+  }
+
+  protected taskStartOffset(task: Task): number {
+    if (!task.startDate) return 0;
+    const start = this.toDate(task.startDate).getTime();
+    return ((start - this.taskTimelineStart) / this.taskTimelineDuration) * 100;
+  }
+
+  protected taskDurationPercent(task: Task): number {
+    if (!task.startDate) return 0;
+    const start = this.toDate(task.startDate).getTime();
+    const end = this.computeTaskEnd(task).getTime();
+    return Math.max(((end - start) / this.taskTimelineDuration) * 100, 2);
+  }
+
+  private computeTaskTimeline(tasks: Task[]): void {
+    if (!tasks.length) {
+      this.taskTimelineStart = Date.now();
+      this.taskTimelineDuration = 1;
+      this.taskTimelineWeeks.set([]);
+      return;
+    }
+    const starts = tasks.map((task) => this.toDate(task.startDate).getTime());
+    const ends = tasks.map((task) => this.computeTaskEnd(task).getTime());
+    const minStart = Math.min(...starts);
+    const maxEnd = Math.max(...ends);
+    const weeks = this.buildTimelineWeeks(minStart, maxEnd);
+    if (weeks.length) {
+      this.taskTimelineStart = weeks[0].start;
+      const lastEnd = weeks[weeks.length - 1].end;
+      this.taskTimelineDuration = Math.max(lastEnd - this.taskTimelineStart, 1);
+    } else {
+      this.taskTimelineStart = minStart;
+      this.taskTimelineDuration = Math.max(maxEnd - this.taskTimelineStart, 1);
+    }
+    this.taskTimelineWeeks.set(weeks);
+  }
+
+  private computeTaskEnd(task: Task): Date {
+    const start = this.toDate(task.startDate);
+    const durationWeeks = Math.max(task.durationWeeks, 0);
+    return new Date(start.getTime() + durationWeeks * 7 * 24 * 60 * 60 * 1000);
+  }
+
+  private toDate(date: DateType): Date {
+    return new Date(date.year, date.month ?? 0, 1 + (date.week ?? 0) * 7);
+  }
+
+  protected timelineWeeks(): Array<TimelineWeek> {
+    return this.taskTimelineWeeks();
+  }
+
+  protected weekMarkerPosition(week: TimelineWeek): number {
+    return ((week.start - this.taskTimelineStart) / this.taskTimelineDuration) * 100;
+  }
+
+  private buildTimelineWeeks(startMs: number, endMs: number): Array<TimelineWeek> {
+    const weeks: Array<TimelineWeek> = [];
+    const cursor = this.alignToWeekStart(new Date(startMs));
+    let index = 1;
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    while (cursor.getTime() <= endMs) {
+      const weekStart = cursor.getTime();
+      const weekEnd = weekStart + weekMs;
+      weeks.push({
+        label: `Week ${index}`,
+        start: weekStart,
+        end: weekEnd,
+      });
+      cursor.setTime(weekEnd);
+      index++;
+    }
+    const minWeeks = 12;
+    while (weeks.length < minWeeks) {
+      const last = weeks[weeks.length - 1];
+      const nextStart = last ? last.end : cursor.getTime();
+      const nextEnd = nextStart + weekMs;
+      weeks.push({ label: `Week ${weeks.length + 1}`, start: nextStart, end: nextEnd });
+    }
+    return weeks;
+  }
+
+  private alignToWeekStart(date: Date): Date {
+    const aligned = new Date(date);
+    aligned.setHours(0, 0, 0, 0);
+    const day = aligned.getDay(); // 0 sunday
+    const diff = day === 0 ? 0 : day * 24 * 60 * 60 * 1000;
+    aligned.setTime(aligned.getTime() - diff);
+    return aligned;
   }
 }

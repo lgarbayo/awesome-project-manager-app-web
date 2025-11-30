@@ -211,6 +211,11 @@ textarea { min-height: 96px; resize: vertical; }
 .data-table th { text-align: left; font-weight: 600; color: var(--muted); }
 .data-table tr:last-child td { border-bottom: none; }
 .table-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.task-table { table-layout: fixed; }
+.col-title { width: 160px; }
+.col-duration { width: 120px; }
+.col-actions { width: 220px; }
+.col-schedule { width: auto; }
 .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 .summary-label { margin: 0; color: var(--primary); font-size: 0.85rem; font-weight: 600; }
 .summary-value { margin: 4px 0 0; font-weight: 600; }
@@ -224,6 +229,14 @@ textarea { min-height: 96px; resize: vertical; }
 .analysis-chip--down { background: rgba(239,68,68,0.12); color: #fca5a5; }
 .analysis-chip .chip-arrow { font-size: 0.85rem; transition: transform .2s ease; }
 .analysis-chip:hover .chip-arrow { transform: translateY(-2px); }
+.gantt-cell { min-width: 160px; width: 100%; }
+.gantt-track { position: relative; width: 100%; height: 12px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.gantt-bar { position: absolute; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, var(--primary), var(--primary-600)); }
+.gantt-header { min-width: 200px; width: 100%; }
+.gantt-scale { position: relative; width: 100%; height: 32px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 6px; }
+.gantt-scale span { position: absolute; bottom: 0; transform: translateX(-50%); font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+.gantt-division { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.2); transform: translateX(-50%); }
+.schedule-col { width: 60%; }
 
 .project-actions-row { justify-content: flex-end; gap: 8px; margin-top: auto; }
 

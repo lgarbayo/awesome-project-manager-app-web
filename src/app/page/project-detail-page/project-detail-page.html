@@ -93,11 +93,24 @@
       <p>No tasks registered yet.</p>
     } @else {
       <div class="table-wrapper">
-        <table class="data-table">
+        <table class="data-table task-table">
+          <colgroup>
+            <col class="col-title" />
+            <col class="col-duration" />
+            <col class="col-schedule" />
+            <col class="col-actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>Title</th>
               <th>Duration</th>
+              <th class="gantt-header schedule-col">
+                <div class="gantt-scale">
+                  @for (week of timelineWeeks(); track week.label) {
+                    <span [style.left.%]="weekMarkerPosition(week)">{{ week.label }}</span>
+                  }
+                </div>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -106,6 +119,18 @@
               <tr>
                 <td>{{ task.title }}</td>
                 <td>{{ task.durationWeeks }} weeks</td>
+                <td class="gantt-cell schedule-col">
+                  <div class="gantt-track">
+                    @for (week of timelineWeeks(); track week.label) {
+                      <span class="gantt-division" [style.left.%]="weekMarkerPosition(week)"></span>
+                    }
+                    <span
+                      class="gantt-bar"
+                      [style.left.%]="taskStartOffset(task)"
+                      [style.width.%]="taskDurationPercent(task)"
+                    ></span>
+                  </div>
+                </td>
                 <td class="table-actions">
                   <button class="btn ghost" type="button" (click)="openTaskDescription(task)">DESCRIPTION</button>
                   <button class="btn ghost" type="button" (click)="openTaskAnalysis(task.uuid)">ANALYSIS</button>
