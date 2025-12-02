@@ -29,17 +29,17 @@
         <label>Month</label>
         <select formControlName="month" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
           @for (month of core.monthNames; track month; let idx = $index) {
-            <option [value]="idx">{{ month }}</option>
+            <option [ngValue]="idx">{{ month }}</option>
           }
         </select>
       </div>
       <div>
         <label>Week</label>
         <select formControlName="week" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
-          <option [value]="0">Week 1</option>
-          <option [value]="1">Week 2</option>
-          <option [value]="2">Week 3</option>
-          <option [value]="3">Week 4</option>
+          <option [ngValue]="0">Week 1</option>
+          <option [ngValue]="1">Week 2</option>
+          <option [ngValue]="2">Week 3</option>
+          <option [ngValue]="3">Week 4</option>
         </select>
       </div>
     </div>
@@ -62,17 +62,17 @@
         <label>Month</label>
         <select formControlName="month" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
           @for (month of core.monthNames; track month; let idx = $index) {
-            <option [value]="idx">{{ month }}</option>
+            <option [ngValue]="idx">{{ month }}</option>
           }
         </select>
       </div>
       <div>
         <label>Week</label>
         <select formControlName="week" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
-          <option [value]="0">Week 1</option>
-          <option [value]="1">Week 2</option>
-          <option [value]="2">Week 3</option>
-          <option [value]="3">Week 4</option>
+          <option [ngValue]="0">Week 1</option>
+          <option [ngValue]="1">Week 2</option>
+          <option [ngValue]="2">Week 3</option>
+          <option [ngValue]="3">Week 4</option>
         </select>
       </div>
     </div>

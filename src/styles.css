@@ -137,7 +137,7 @@ textarea { min-height: 96px; resize: vertical; }
 .additional-controls .btn { flex: 0 0 auto; }
 
 /* Buttons */
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--button-bg); color: var(--text); text-decoration: none; cursor: pointer; font-weight: 600; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--button-bg); color: var(--text); text-decoration: none; cursor: pointer; font-weight: 600; transition: background .15s ease, color .15s ease, border-color .15s ease, transform .2s ease, box-shadow .2s ease; }
 .btn:hover { background: var(--button-hover); }
 .btn.primary { background: var(--primary); color: #0f0f0f; }
 .btn.primary:hover { background: var(--primary-600); color: #0b0b0b; }
@@ -147,6 +147,27 @@ textarea { min-height: 96px; resize: vertical; }
 .app-header .btn.ghost:hover { background: rgba(255,255,255,0.1); }
 .btn.danger { background: rgba(239,68,68,0.12); color: #fca5a5; border-color: rgba(239,68,68,0.35); }
 .btn.danger:hover { background: rgba(239,68,68,0.2); }
+.btn:active { transform: translateY(1px) scale(0.98); }
+.project-actions-row .btn,
+.table-actions .btn,
+.tasks .btn.icon-only,
+.row-refresh .btn {
+  will-change: transform;
+  position: relative;
+}
+.project-actions-row .btn:hover,
+.table-actions .btn:hover,
+.tasks .btn.icon-only:hover,
+.row-refresh .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+}
+.project-actions-row .btn:focus-visible,
+.table-actions .btn:focus-visible,
+.tasks .btn.icon-only:focus-visible,
+.row-refresh .btn:focus-visible {
+  animation: actionPulse .6s ease;
+}
 
 /* Modal */
 .modal-backdrop {
@@ -190,6 +211,12 @@ textarea { min-height: 96px; resize: vertical; }
 @keyframes modalPop {
   from { transform: translateY(-20px) scale(0.96); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes actionPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 rgba(245,158,11,0.45); }
+  40% { transform: scale(1.03); box-shadow: 0 8px 20px rgba(245,158,11,0.35); }
+  100% { transform: scale(1); box-shadow: 0 0 0 rgba(245,158,11,0); }
 }
 
 /* Pills, badges */

@@ -3,7 +3,6 @@ import { Project, UpsertProjectCommand } from '../../../model/project.model';
 import { ProjectService } from '../../../service/project-service';
 import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { CoreService } from '../../../service/core-service';
-import { DateType } from '../../../model/core.model';
 
 const trimmedRequired: ValidatorFn = (control) => {
   const value = (control.value ?? '') as string;
@@ -53,11 +52,8 @@ export class ProjectForm {
     }
 
     // normalize dates and emit
-    const rawValue = this.form.getRawValue();
     const command: UpsertProjectCommand = {
-      ...rawValue,
-      startDate: this.normalizeDate(rawValue.startDate),
-      endDate: this.normalizeDate(rawValue.endDate)
+      ...this.form.getRawValue(),
     };
     this.edited.emit(command);
   }
@@ -117,11 +113,4 @@ export class ProjectForm {
     return !!this.form.errors?.['dateRange'] && this.form.touched;
   }
 
-  private normalizeDate(date: DateType): DateType {
-    return {
-      ...date,
-      month: this.core.toBackendMonth(date.month),
-      week: this.core.toBackendWeek(date.week),
-    };
-  }
 }

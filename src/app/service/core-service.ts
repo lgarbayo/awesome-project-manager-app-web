@@ -47,20 +47,8 @@ export class CoreService {
     return `${month} ${date.year} · Week ${week}`;
   }
 
-  toDisplayMonth(value?: number | null): number {
-    return (value ?? 0) + 1;
-  }
-
   toDisplayWeek(value?: number | null): number {
     return (value ?? 0) + 1;
-  }
-
-  toBackendMonth(displayValue: number): number {
-    return Math.max(displayValue - 1, 0);
-  }
-
-  toBackendWeek(displayValue: number): number {
-    return Math.max(displayValue - 1, 0);
   }
 
 }
