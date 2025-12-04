@@ -75,6 +75,8 @@ export class ProjectDetailPage {
   taskError = signal<string | null>(null);
   analysisLoading = signal(false);
   analysisError = signal<string | null>(null);
+  milestoneAnalysisMessage = signal<string | null>(null);
+  taskAnalysisMessage = signal<string | null>(null);
   showProjectModal = signal(false);
   showMilestoneModal = signal(false);
   showTaskModal = signal(false);
@@ -142,20 +144,27 @@ export class ProjectDetailPage {
   }
 
   openMilestoneAnalysis(milestoneUuid: string): void {
+    this.showMilestoneAnalysisModal.set(true);
+    this.milestoneAnalysisMessage.set(null);
     const data = this.analysis();
     if (!data) {
+      this.selectedMilestoneAnalysis.set(null);
+      this.milestoneAnalysisMessage.set('No analysis data available yet.');
       return;
     }
-    const detail = data.milestoneList.find((item) => item.milestoneUuid === milestoneUuid);
-    if (!detail) {
+    const detail = data.milestoneList.find((item) => item.milestoneUuid === milestoneUuid) ?? null;
+    if (detail) {
+      this.selectedMilestoneAnalysis.set(detail);
       return;
     }
-    this.selectedMilestoneAnalysis.set(detail);
-    this.showMilestoneAnalysisModal.set(true);
+    this.selectedMilestoneAnalysis.set(null);
+    this.milestoneAnalysisMessage.set("We couldn't find analysis data for this milestone.");
   }
 
   closeMilestoneAnalysisModal(): void {
-    this.closeSelectionModal(this.selectedMilestoneAnalysis, this.showMilestoneAnalysisModal);
+    this.closeSelectionModal(this.selectedMilestoneAnalysis, this.showMilestoneAnalysisModal, () => {
+      this.milestoneAnalysisMessage.set(null);
+    });
   }
 
   openMilestoneDescription(milestone: Milestone): void {
@@ -167,16 +176,21 @@ export class ProjectDetailPage {
   }
 
   openTaskAnalysis(taskUuid: string): void {
+    this.showTaskAnalysisModal.set(true);
+    this.taskAnalysisMessage.set(null);
     const taskAnalysis = this.findTaskAnalysis(taskUuid);
-    if (!taskAnalysis) {
+    if (taskAnalysis) {
+      this.selectedTaskAnalysis.set(taskAnalysis);
       return;
     }
-    this.selectedTaskAnalysis.set(taskAnalysis);
-    this.showTaskAnalysisModal.set(true);
+    this.selectedTaskAnalysis.set(null);
+    this.taskAnalysisMessage.set("We couldn't find analysis data for this task.");
   }
 
   closeTaskAnalysisModal(): void {
-    this.closeSelectionModal(this.selectedTaskAnalysis, this.showTaskAnalysisModal);
+    this.closeSelectionModal(this.selectedTaskAnalysis, this.showTaskAnalysisModal, () => {
+      this.taskAnalysisMessage.set(null);
+    });
   }
 
   openTaskDescription(task: Task): void {

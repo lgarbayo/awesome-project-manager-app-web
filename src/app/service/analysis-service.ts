@@ -13,4 +13,5 @@ export class AnalysisService {
   getProjectAnalysis(projectUuid: string): Observable<ProjectAnalysis> {
     return this.http.get<ProjectAnalysis>(`${this.projectUrl}/${projectUuid}/analysis`);
   }
+
 }

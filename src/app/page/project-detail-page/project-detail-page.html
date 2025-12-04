@@ -251,7 +251,7 @@
       </div>
     }
 
-    @if (showMilestoneAnalysisModal() && selectedMilestoneAnalysis(); as milestoneAnalysis) {
+    @if (showMilestoneAnalysisModal()) {
       <div class="modal-backdrop" (click)="closeMilestoneAnalysisModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
@@ -259,42 +259,48 @@
             <button class="btn ghost" type="button" (click)="closeMilestoneAnalysisModal()">Close</button>
           </div>
           <div class="modal-body">
-            <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
-            <p class="muted">
-              {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
-              {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
-            </p>
-            <p>
-              Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-              {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
-            </p>
-            @if (milestoneAnalysis.taskList.length === 0) {
-              <p>No task analysis available.</p>
-            } @else {
-              <ul class="stack-sm analysis-list">
-                @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
-                  <li class="analysis-item">
-                    <span>{{ taskAnalysis.taskTitle }}</span>
-                    <span
-                      class="analysis-chip"
-                      [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
-                    >
-                      <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
-                      <span class="chip-arrow">
-                        {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
+            @if (milestoneAnalysisMessage(); as message) {
+              <p class="muted">{{ message }}</p>
+            } @else if (selectedMilestoneAnalysis(); as milestoneAnalysis) {
+              <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
+              <p class="muted">
+                {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
+                {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
+              </p>
+              <p>
+                Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
+                {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+              </p>
+              @if (milestoneAnalysis.taskList.length === 0) {
+                <p>No task analysis available.</p>
+              } @else {
+                <ul class="stack-sm analysis-list">
+                  @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
+                    <li class="analysis-item">
+                      <span>{{ taskAnalysis.taskTitle }}</span>
+                      <span
+                        class="analysis-chip"
+                        [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+                      >
+                        <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
+                        <span class="chip-arrow">
+                          {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
+                        </span>
+                        <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
                       </span>
-                      <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
-                    </span>
-                  </li>
-                }
-              </ul>
+                    </li>
+                  }
+                </ul>
+              }
+            } @else {
+              <p class="muted">No milestone analysis data available yet.</p>
             }
           </div>
         </div>
       </div>
     }
 
-    @if (showTaskAnalysisModal() && selectedTaskAnalysis(); as taskAnalysis) {
+    @if (showTaskAnalysisModal()) {
       <div class="modal-backdrop" (click)="closeTaskAnalysisModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
@@ -302,18 +308,24 @@
             <button class="btn ghost" type="button" (click)="closeTaskAnalysisModal()">Close</button>
           </div>
           <div class="modal-body">
-            <h3>{{ taskAnalysis.taskTitle }}</h3>
-            <p class="muted">Task progress</p>
-            <div
-              class="analysis-chip"
-              [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
-            >
-              <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
-              <span class="chip-arrow">
-                {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
-              </span>
-              <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
-            </div>
+            @if (taskAnalysisMessage(); as message) {
+              <p class="muted">{{ message }}</p>
+            } @else if (selectedTaskAnalysis(); as taskAnalysis) {
+              <h3>{{ taskAnalysis.taskTitle }}</h3>
+              <p class="muted">Task progress</p>
+              <div
+                class="analysis-chip"
+                [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+              >
+                <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
+                <span class="chip-arrow">
+                  {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
+                </span>
+                <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
+              </div>
+            } @else {
+              <p class="muted">No task analysis data available yet.</p>
+            }
           </div>
         </div>
       </div>
