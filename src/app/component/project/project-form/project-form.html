@@ -113,7 +113,9 @@
   </fieldset>
 
   <div class="form-actions">
-    <button class="btn primary" type="submit">Update project</button>
+    <button class="btn primary" type="submit">
+      {{ data() ? 'Update project' : 'Create project' }}
+    </button>
     <button class="btn ghost" type="button" (click)="cancelProjectEdition()">Cancel</button>
   </div>
 </form>

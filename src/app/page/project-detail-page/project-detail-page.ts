@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal, ViewChild, WritableSignal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ProjectService } from '../../service/project-service';
 import { Project, UpsertProjectCommand } from '../../model/project.model';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -18,6 +18,14 @@ import { CoreService } from '../../service/core-service';
 import { DateType } from '../../model/core.model';
 
 type TimelineWeek = { label: string; start: number; end: number };
+type Identifiable = { uuid: string };
+type EntitySaveRequest<Command> = (projectUuid: string, command: Command) => Observable<unknown>;
+type EntityUpdateRequest<Command> = (
+  projectUuid: string,
+  entityUuid: string,
+  command: Command
+) => Observable<unknown>;
+type EntityDeleteRequest = (projectUuid: string, entityUuid: string) => Observable<unknown>;
 @Component({
   selector: 'app-project-detail-page',
   standalone: true,
@@ -110,29 +118,27 @@ export class ProjectDetailPage {
     });
   }
   openProjectModal(): void {
-    this.showProjectModal.set(true);
+    this.openModal(this.showProjectModal);
   }
 
   closeProjectModal(): void {
-    this.showProjectModal.set(false);
+    this.closeModal(this.showProjectModal);
   }
 
   openMilestoneModal(milestone?: Milestone): void {
-    this.selectedMilestone.set(milestone ?? null);
-    this.showMilestoneModal.set(true);
+    this.openSelectionModal(this.selectedMilestone, this.showMilestoneModal, milestone);
   }
 
   openTaskModal(task?: Task): void {
-    this.selectedTask.set(task ?? null);
-    this.showTaskModal.set(true);
+    this.openSelectionModal(this.selectedTask, this.showTaskModal, task);
   }
 
   openAnalysisModal(): void {
-    this.showAnalysisModal.set(true);
+    this.openModal(this.showAnalysisModal);
   }
 
   closeAnalysisModal(): void {
-    this.showAnalysisModal.set(false);
+    this.closeModal(this.showAnalysisModal);
   }
 
   openMilestoneAnalysis(milestoneUuid: string): void {
@@ -149,116 +155,79 @@ export class ProjectDetailPage {
   }
 
   closeMilestoneAnalysisModal(): void {
-    this.selectedMilestoneAnalysis.set(null);
-    this.showMilestoneAnalysisModal.set(false);
+    this.closeSelectionModal(this.selectedMilestoneAnalysis, this.showMilestoneAnalysisModal);
   }
 
   openMilestoneDescription(milestone: Milestone): void {
-    this.selectedMilestoneDescription.set(milestone);
-    this.showMilestoneDescriptionModal.set(true);
+    this.openSelectionModal(this.selectedMilestoneDescription, this.showMilestoneDescriptionModal, milestone);
   }
 
   closeMilestoneDescription(): void {
-    this.selectedMilestoneDescription.set(null);
-    this.showMilestoneDescriptionModal.set(false);
+    this.closeSelectionModal(this.selectedMilestoneDescription, this.showMilestoneDescriptionModal);
   }
 
   openTaskAnalysis(taskUuid: string): void {
-    const analysis = this.selectedMilestoneAnalysis();
-    if (!analysis) {
-      const projectAnalysis = this.analysis();
-      if (!projectAnalysis) return;
-      for (const milestone of projectAnalysis.milestoneList) {
-        const foundTask = milestone.taskList.find((task) => task.taskUuid === taskUuid);
-        if (foundTask) {
-          this.selectedTaskAnalysis.set(foundTask);
-          this.showTaskAnalysisModal.set(true);
-          return;
-        }
-      }
+    const taskAnalysis = this.findTaskAnalysis(taskUuid);
+    if (!taskAnalysis) {
       return;
     }
-    const taskDetail = analysis.taskList.find((task) => task.taskUuid === taskUuid);
-    if (!taskDetail) {
-      const projectAnalysis = this.analysis();
-      if (!projectAnalysis) return;
-      for (const milestone of projectAnalysis.milestoneList) {
-        const foundTask = milestone.taskList.find((task) => task.taskUuid === taskUuid);
-        if (foundTask) {
-          this.selectedTaskAnalysis.set(foundTask);
-          this.showTaskAnalysisModal.set(true);
-          return;
-        }
-      }
-      return;
-    }
-    this.selectedTaskAnalysis.set(taskDetail);
+    this.selectedTaskAnalysis.set(taskAnalysis);
     this.showTaskAnalysisModal.set(true);
   }
 
   closeTaskAnalysisModal(): void {
-    this.selectedTaskAnalysis.set(null);
-    this.showTaskAnalysisModal.set(false);
+    this.closeSelectionModal(this.selectedTaskAnalysis, this.showTaskAnalysisModal);
   }
 
   openTaskDescription(task: Task): void {
-    this.selectedTaskDescription.set(task);
-    this.showTaskDescriptionModal.set(true);
+    this.openSelectionModal(this.selectedTaskDescription, this.showTaskDescriptionModal, task);
   }
 
   closeTaskDescription(): void {
-    this.selectedTaskDescription.set(null);
-    this.showTaskDescriptionModal.set(false);
+    this.closeSelectionModal(this.selectedTaskDescription, this.showTaskDescriptionModal);
   }
 
   saveMilestone(command: UpsertMilestoneCommand): void {
-    const projectUuid = this.projectUuid();
-    if (!projectUuid) {
-      return;
-    }
-    this.milestoneLoading.set(true);
-    const editing = this.selectedMilestone();
-    const request$ = editing
-      ? this.milestoneService.update(projectUuid, editing.uuid, command)
-      : this.milestoneService.create(projectUuid, command);
-
-    request$.subscribe({
-      next: () => {
-        this.milestoneForm?.resetForm();
-        this.selectedMilestone.set(null);
-        this.loadMilestones(projectUuid);
-        this.loadAnalysis(projectUuid);
-        this.showMilestoneModal.set(false);
-      },
-      error: (error) => {
-        console.error('Error saving milestone', error);
-        this.milestoneError.set("Couldn't save the milestone.");
-        this.milestoneLoading.set(false);
-      },
+    this.withProjectUuid((projectUuid) => {
+      this.handleEntitySave<Milestone, UpsertMilestoneCommand>({
+        projectUuid,
+        command,
+        editing: this.selectedMilestone(),
+        create: (uuid, payload) => this.milestoneService.create(uuid, payload),
+        update: (uuid, entityUuid, payload) => this.milestoneService.update(uuid, entityUuid, payload),
+        loading: this.milestoneLoading,
+        errorSignal: this.milestoneError,
+        logMessage: 'Error saving milestone',
+        userMessage: "Couldn't save the milestone.",
+        selection: this.selectedMilestone,
+        modal: this.showMilestoneModal,
+        formReset: () => this.milestoneForm?.resetForm(),
+        refresh: () => {
+          this.loadMilestones(projectUuid);
+          this.loadAnalysis(projectUuid);
+        },
+      });
     });
   }
 
   removeMilestone(milestoneUuid: string): void {
-    const projectUuid = this.projectUuid();
-    if (!projectUuid) {
-      return;
-    }
-    this.milestoneLoading.set(true);
-    this.milestoneService.delete(projectUuid, milestoneUuid).subscribe({
-      next: () => {
-        if (this.selectedMilestone()?.uuid === milestoneUuid) {
-          this.selectedMilestone.set(null);
-          this.milestoneForm?.resetForm();
-          this.showMilestoneModal.set(false);
-        }
-        this.loadMilestones(projectUuid);
-        this.loadAnalysis(projectUuid);
-      },
-      error: (error) => {
-        console.error('Error deleting milestone', error);
-        this.milestoneError.set("Couldn't delete the milestone.");
-        this.milestoneLoading.set(false);
-      },
+    this.withProjectUuid((projectUuid) => {
+      this.handleEntityRemoval<Milestone>({
+        projectUuid,
+        entityUuid: milestoneUuid,
+        deleteFn: (uuid, entityUuid) => this.milestoneService.delete(uuid, entityUuid),
+        loading: this.milestoneLoading,
+        errorSignal: this.milestoneError,
+        logMessage: 'Error deleting milestone',
+        userMessage: "Couldn't delete the milestone.",
+        selection: this.selectedMilestone,
+        modal: this.showMilestoneModal,
+        formReset: () => this.milestoneForm?.resetForm(),
+        refresh: () => {
+          this.loadMilestones(projectUuid);
+          this.loadAnalysis(projectUuid);
+        },
+      });
     });
   }
 
@@ -267,59 +236,50 @@ export class ProjectDetailPage {
   }
 
   cancelMilestoneEdition(): void {
-    this.selectedMilestone.set(null);
-    this.milestoneForm?.resetForm();
-    this.showMilestoneModal.set(false);
+    this.closeSelectionModal(this.selectedMilestone, this.showMilestoneModal, () => this.milestoneForm?.resetForm());
   }
 
   saveTask(command: UpsertTaskCommand): void {
-    const projectUuid = this.projectUuid();
-    if (!projectUuid) {
-      return;
-    }
-    this.taskLoading.set(true);
-    const editing = this.selectedTask();
-    const request$ = editing
-      ? this.taskService.update(projectUuid, editing.uuid, command)
-      : this.taskService.create(projectUuid, command);
-
-    request$.subscribe({
-      next: () => {
-        this.taskForm?.resetForm();
-        this.selectedTask.set(null);
-        this.loadTasks(projectUuid);
-        this.loadAnalysis(projectUuid);
-        this.showTaskModal.set(false);
-      },
-      error: (error) => {
-        console.error('Error saving task', error);
-        this.taskError.set("Couldn't save the task.");
-        this.taskLoading.set(false);
-      },
+    this.withProjectUuid((projectUuid) => {
+      this.handleEntitySave<Task, UpsertTaskCommand>({
+        projectUuid,
+        command,
+        editing: this.selectedTask(),
+        create: (uuid, payload) => this.taskService.create(uuid, payload),
+        update: (uuid, entityUuid, payload) => this.taskService.update(uuid, entityUuid, payload),
+        loading: this.taskLoading,
+        errorSignal: this.taskError,
+        logMessage: 'Error saving task',
+        userMessage: "Couldn't save the task.",
+        selection: this.selectedTask,
+        modal: this.showTaskModal,
+        formReset: () => this.taskForm?.resetForm(),
+        refresh: () => {
+          this.loadTasks(projectUuid);
+          this.loadAnalysis(projectUuid);
+        },
+      });
     });
   }
 
   removeTask(taskUuid: string): void {
-    const projectUuid = this.projectUuid();
-    if (!projectUuid) {
-      return;
-    }
-    this.taskLoading.set(true);
-    this.taskService.delete(projectUuid, taskUuid).subscribe({
-      next: () => {
-        if (this.selectedTask()?.uuid === taskUuid) {
-          this.selectedTask.set(null);
-          this.taskForm?.resetForm();
-          this.showTaskModal.set(false);
-        }
-        this.loadTasks(projectUuid);
-        this.loadAnalysis(projectUuid);
-      },
-      error: (error) => {
-        console.error('Error deleting task', error);
-        this.taskError.set("Couldn't delete the task.");
-        this.taskLoading.set(false);
-      },
+    this.withProjectUuid((projectUuid) => {
+      this.handleEntityRemoval<Task>({
+        projectUuid,
+        entityUuid: taskUuid,
+        deleteFn: (uuid, entityUuid) => this.taskService.delete(uuid, entityUuid),
+        loading: this.taskLoading,
+        errorSignal: this.taskError,
+        logMessage: 'Error deleting task',
+        userMessage: "Couldn't delete the task.",
+        selection: this.selectedTask,
+        modal: this.showTaskModal,
+        formReset: () => this.taskForm?.resetForm(),
+        refresh: () => {
+          this.loadTasks(projectUuid);
+          this.loadAnalysis(projectUuid);
+        },
+      });
     });
   }
 
@@ -328,9 +288,7 @@ export class ProjectDetailPage {
   }
 
   cancelTaskEdition(): void {
-    this.selectedTask.set(null);
-    this.taskForm?.resetForm();
-    this.showTaskModal.set(false);
+    this.closeSelectionModal(this.selectedTask, this.showTaskModal, () => this.taskForm?.resetForm());
   }
 
   // same as trackBy function in *ngFor:
@@ -347,54 +305,220 @@ export class ProjectDetailPage {
     return task.uuid;
   }
 
-  private loadProject(projectUuid: string): void {
-    this.projectLoading.set(true);
-    this.projectService.get(projectUuid).subscribe({
-      next: (project) => {
-        this.project.set(project);
-        this.projectError.set(null);
+  private openModal(modal: WritableSignal<boolean>): void {
+    modal.set(true);
+  }
+
+  private closeModal(modal: WritableSignal<boolean>): void {
+    modal.set(false);
+  }
+
+  private openSelectionModal<T>(
+    selection: WritableSignal<T | null>,
+    modal: WritableSignal<boolean>,
+    value?: T | null
+  ): void {
+    selection.set(value ?? null);
+    modal.set(true);
+  }
+
+  private closeSelectionModal<T>(
+    selection: WritableSignal<T | null>,
+    modal: WritableSignal<boolean>,
+    cleanup?: () => void
+  ): void {
+    selection.set(null);
+    cleanup?.();
+    modal.set(false);
+  }
+
+  private withProjectUuid(action: (projectUuid: string) => void): void {
+    const projectUuid = this.projectUuid();
+    if (projectUuid) {
+      action(projectUuid);
+    }
+  }
+
+  private handleEntitySave<T extends Identifiable, Command>(config: {
+    projectUuid: string;
+    command: Command;
+    editing: T | null;
+    create: EntitySaveRequest<Command>;
+    update: EntityUpdateRequest<Command>;
+    loading: WritableSignal<boolean>;
+    errorSignal: WritableSignal<string | null>;
+    logMessage: string;
+    userMessage: string;
+    selection: WritableSignal<T | null>;
+    modal: WritableSignal<boolean>;
+    formReset?: () => void;
+    refresh: () => void;
+  }): void {
+    const {
+      projectUuid,
+      command,
+      editing,
+      create,
+      update,
+      loading,
+      errorSignal,
+      logMessage,
+      userMessage,
+      selection,
+      modal,
+      formReset,
+      refresh,
+    } = config;
+    loading.set(true);
+    const request$ = editing
+      ? update(projectUuid, editing.uuid, command)
+      : create(projectUuid, command);
+
+    request$.subscribe({
+      next: () => {
+        formReset?.();
+        selection.set(null);
+        modal.set(false);
+        errorSignal.set(null);
+        refresh();
       },
       error: (error) => {
-        console.error('Unable to load project', error);
-        this.project.set(undefined);
-        this.projectError.set("Couldn't load the project.");
+        console.error(logMessage, error);
+        errorSignal.set(userMessage);
+        loading.set(false);
       },
-      complete: () => this.projectLoading.set(false),
+    });
+  }
+
+  private handleEntityRemoval<T extends Identifiable>(config: {
+    projectUuid: string;
+    entityUuid: string;
+    deleteFn: EntityDeleteRequest;
+    loading: WritableSignal<boolean>;
+    errorSignal: WritableSignal<string | null>;
+    logMessage: string;
+    userMessage: string;
+    selection: WritableSignal<T | null>;
+    modal: WritableSignal<boolean>;
+    formReset?: () => void;
+    refresh: () => void;
+  }): void {
+    const {
+      projectUuid,
+      entityUuid,
+      deleteFn,
+      loading,
+      errorSignal,
+      logMessage,
+      userMessage,
+      selection,
+      modal,
+      formReset,
+      refresh,
+    } = config;
+    loading.set(true);
+    deleteFn(projectUuid, entityUuid).subscribe({
+      next: () => {
+        const current = selection();
+        if (current?.uuid === entityUuid) {
+          selection.set(null);
+          formReset?.();
+          modal.set(false);
+        }
+        errorSignal.set(null);
+        refresh();
+      },
+      error: (error) => {
+        console.error(logMessage, error);
+        errorSignal.set(userMessage);
+        loading.set(false);
+      },
+    });
+  }
+
+  private findTaskAnalysis(taskUuid: string): TaskAnalysis | null {
+    const milestoneAnalysis = this.selectedMilestoneAnalysis();
+    if (milestoneAnalysis) {
+      const fromMilestone = milestoneAnalysis.taskList.find((task) => task.taskUuid === taskUuid);
+      if (fromMilestone) {
+        return fromMilestone;
+      }
+    }
+    const projectAnalysis = this.analysis();
+    if (!projectAnalysis) {
+      return null;
+    }
+    for (const milestone of projectAnalysis.milestoneList) {
+      const taskDetail = milestone.taskList.find((task) => task.taskUuid === taskUuid);
+      if (taskDetail) {
+        return taskDetail;
+      }
+    }
+    return null;
+  }
+
+  private loadEntity<T>(config: {
+    request: Observable<T>;
+    loading: WritableSignal<boolean>;
+    errorSignal: WritableSignal<string | null>;
+    logMessage: string;
+    userMessage: string;
+    onSuccess: (value: T) => void;
+    onError?: () => void;
+  }): void {
+    const { request, loading, errorSignal, logMessage, userMessage, onSuccess, onError } = config;
+    loading.set(true);
+    request.subscribe({
+      next: (value) => {
+        onSuccess(value);
+        errorSignal.set(null);
+      },
+      error: (error) => {
+        console.error(logMessage, error);
+        onError?.();
+        errorSignal.set(userMessage);
+        loading.set(false);
+      },
+      complete: () => loading.set(false),
+    });
+  }
+
+  private loadProject(projectUuid: string): void {
+    this.loadEntity<Project>({
+      request: this.projectService.get(projectUuid),
+      loading: this.projectLoading,
+      errorSignal: this.projectError,
+      logMessage: 'Unable to load project',
+      userMessage: "Couldn't load the project.",
+      onSuccess: (project) => this.project.set(project),
+      onError: () => this.project.set(undefined),
     });
   }
 
   private loadMilestones(projectUuid: string): void {
-    this.milestoneLoading.set(true);
-    this.milestoneService.list(projectUuid).subscribe({
-      next: (milestones) => {
-        this.milestones.set(this.sortMilestonesByDate(milestones));
-        this.milestoneError.set(null);
-      },
-      error: (error) => {
-        console.error('Unable to load milestones', error);
-        this.milestones.set([]);
-        this.milestoneError.set("Couldn't load the milestones.");
-        this.milestoneLoading.set(false);
-      },
-      complete: () => this.milestoneLoading.set(false),
+    this.loadEntity<Array<Milestone>>({
+      request: this.milestoneService.list(projectUuid),
+      loading: this.milestoneLoading,
+      errorSignal: this.milestoneError,
+      logMessage: 'Unable to load milestones',
+      userMessage: "Couldn't load the milestones.",
+      onSuccess: (milestones) => this.milestones.set(this.sortMilestonesByDate(milestones)),
+      onError: () => this.milestones.set([]),
     });
   }
 
   private loadTasks(projectUuid: string): void {
-    this.taskLoading.set(true);
-    this.taskService.list(projectUuid).subscribe({
-      next: (tasks) => {
+    this.loadEntity<Array<Task>>({
+      request: this.taskService.list(projectUuid),
+      loading: this.taskLoading,
+      errorSignal: this.taskError,
+      logMessage: 'Unable to load tasks',
+      userMessage: "Couldn't load the tasks.",
+      onSuccess: (tasks) => {
         this.tasks.set(tasks);
-        this.taskError.set(null);
         this.computeTaskTimeline(tasks);
       },
-      error: (error) => {
-        console.error('Unable to load tasks', error);
-        this.tasks.set([]);
-        this.taskError.set("Couldn't load the tasks.");
-        this.taskLoading.set(false);
-      },
-      complete: () => this.taskLoading.set(false),
+      onError: () => this.tasks.set([]),
     });
   }
 
@@ -407,19 +531,14 @@ export class ProjectDetailPage {
   }
 
   private loadAnalysis(projectUuid: string): void {
-    this.analysisLoading.set(true);
-    this.analysisService.getProjectAnalysis(projectUuid).subscribe({
-      next: (analysis) => {
-        this.analysis.set(analysis);
-        this.analysisError.set(null);
-      },
-      error: (error) => {
-        console.error('Unable to load project analysis', error);
-        this.analysis.set(undefined);
-        this.analysisError.set("Couldn't load the analysis.");
-        this.analysisLoading.set(false);
-      },
-      complete: () => this.analysisLoading.set(false),
+    this.loadEntity<ProjectAnalysis>({
+      request: this.analysisService.getProjectAnalysis(projectUuid),
+      loading: this.analysisLoading,
+      errorSignal: this.analysisError,
+      logMessage: 'Unable to load project analysis',
+      userMessage: "Couldn't load the analysis.",
+      onSuccess: (analysis) => this.analysis.set(analysis),
+      onError: () => this.analysis.set(undefined),
     });
   }
 
