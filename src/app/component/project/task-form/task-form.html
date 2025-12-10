@@ -1,18 +1,18 @@
 <form [formGroup]="form" (ngSubmit)="save()">
-  <div class="field-group">
-    <label>Task title</label>
+  <fieldset>
+    <legend>Task title</legend>
     <input formControlName="title" />
-  </div>
+  </fieldset>
 
-  <div class="field-group">
-    <label>Description</label>
+  <fieldset>
+    <legend>Description</legend>
     <textarea rows="3" formControlName="description"></textarea>
-  </div>
+  </fieldset>
 
-  <div class="field-group">
-    <label>Duration (weeks)</label>
+  <fieldset>
+    <legend>Duration (weeks)</legend>
     <input type="number" min="1" formControlName="durationWeeks" />
-  </div>
+  </fieldset>
 
   <fieldset formGroupName="startDate">
     <legend>Start date</legend>

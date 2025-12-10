@@ -1,13 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="save()">
-  <div class="field-group">
-    <label>Milestone title</label>
+  <fieldset>
+    <legend>Milestone title</legend>
     <input formControlName="title" />
-  </div>
+  </fieldset>
 
-  <div class="field-group">
-    <label>Description</label>
+  <fieldset>
+    <legend>Description</legend>
     <textarea rows="2" formControlName="description"></textarea>
-  </div>
+  </fieldset>
 
   <fieldset formGroupName="date">
     <legend>Target date</legend>
