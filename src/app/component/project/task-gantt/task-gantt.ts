@@ -7,6 +7,15 @@ import { ProjectAnalysis, TaskAnalysis } from '../../../model/analysis.model';
 
 type TimelineWeek = { label: string; start: number; end: number };
 type TimelineMonth = { label: string; start: number; end: number };
+type DragMode = 'move' | 'resize-start' | 'resize-end';
+type DragState = {
+  task: Task;
+  mode: DragMode;
+  startX: number;
+  initialStart: number;
+  initialEnd: number;
+  trackRect: DOMRect;
+};
 
 @Component({
   selector: 'app-task-gantt',
@@ -29,6 +38,7 @@ export class TaskGantt implements AfterViewInit {
   analyseTask = output<string>();
   editTask = output<Task>();
   removeTask = output<string>();
+  updateTaskTimeline = output<{ task: Task; startDate: Date; durationWeeks: number }>();
 
   @ViewChild('ganttViewport') private ganttViewport?: ElementRef<HTMLDivElement>;
   @ViewChildren('ganttRow') private ganttRows?: QueryList<ElementRef<HTMLDivElement>>;
@@ -38,6 +48,9 @@ export class TaskGantt implements AfterViewInit {
   private currentScroll = 0;
   protected weeks = signal<Array<TimelineWeek>>([]);
   protected months = signal<Array<TimelineMonth>>([]);
+  private dragPreview = signal<Record<string, { start: number; end: number }>>({});
+  private dragState: DragState | null = null;
+  private readonly weekMs = 7 * 24 * 60 * 60 * 1000;
   protected timelineWidth = computed(() => {
     const months = this.months().length || 1;
     const minWidth = 720;
@@ -87,13 +100,13 @@ export class TaskGantt implements AfterViewInit {
   }
 
   protected taskStartOffset(task: Task): number {
-    const startDate = this.toDate(task.startDate).getTime();
+    const startDate = this.previewedStart(task);
     return ((startDate - this.timelineStart()) / this.timelineDuration()) * 100;
   }
 
   protected taskDurationPercent(task: Task): number {
-    const start = this.toDate(task.startDate).getTime();
-    const end = this.computeTaskEnd(task).getTime();
+    const start = this.previewedStart(task);
+    const end = this.previewedEnd(task);
     return Math.max(((end - start) / this.timelineDuration()) * 100, 2);
   }
 
@@ -185,12 +198,11 @@ export class TaskGantt implements AfterViewInit {
     if (endMs <= startMs) {
       return weeks;
     }
-    const weekMs = 7 * 24 * 60 * 60 * 1000;
     let cursor = startMs;
     let index = 1;
     while (cursor < endMs) {
       const start = cursor;
-      const end = Math.min(cursor + weekMs, endMs);
+      const end = Math.min(cursor + this.weekMs, endMs);
       weeks.push({ label: `${index}`, start, end });
       cursor = end;
       index++;
@@ -201,7 +213,7 @@ export class TaskGantt implements AfterViewInit {
   private computeTaskEnd(task: Task): Date {
     const start = this.toDate(task.startDate);
     const durationWeeks = Math.max(task.durationWeeks, 0);
-    return new Date(start.getTime() + durationWeeks * 7 * 24 * 60 * 60 * 1000);
+    return new Date(start.getTime() + durationWeeks * this.weekMs);
   }
 
   private toDate(date: { year: number; month?: number | null; week?: number | null }): Date {
@@ -262,5 +274,119 @@ export class TaskGantt implements AfterViewInit {
     if (viewport && viewport.scrollLeft !== scrollLeft) {
       viewport.scrollLeft = scrollLeft;
     }
+  }
+
+  protected startDrag(event: PointerEvent, task: Task, mode: DragMode): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const track = this.findTrackElement(event.target as HTMLElement);
+    if (!track) {
+      return;
+    }
+    const rect = track.getBoundingClientRect();
+    this.dragState = {
+      task,
+      mode,
+      startX: event.clientX,
+      initialStart: this.toDate(task.startDate).getTime(),
+      initialEnd: this.computeTaskEnd(task).getTime(),
+      trackRect: rect,
+    };
+    window.addEventListener('pointermove', this.handlePointerMove);
+    window.addEventListener('pointerup', this.handlePointerUp);
+  }
+
+  protected isDragging(taskUuid: string): boolean {
+    return this.dragState?.task.uuid === taskUuid;
+  }
+
+  private handlePointerMove = (event: PointerEvent): void => {
+    if (!this.dragState) {
+      return;
+    }
+    const { task, mode, startX, initialStart, initialEnd, trackRect } = this.dragState;
+    const deltaPx = event.clientX - startX;
+    if (trackRect.width === 0) {
+      return;
+    }
+    const ratio = deltaPx / trackRect.width;
+    const deltaMs = ratio * this.timelineDuration();
+    const timelineStart = this.timelineStart();
+    const timelineEnd = timelineStart + this.timelineDuration();
+    const minDuration = this.weekMs;
+    let previewStart = initialStart;
+    let previewEnd = initialEnd;
+
+    if (mode === 'move') {
+      const duration = previewEnd - previewStart;
+      previewStart = this.clamp(initialStart + deltaMs, timelineStart, timelineEnd - duration);
+      previewStart = this.snapToWeek(previewStart);
+      previewStart = this.clamp(previewStart, timelineStart, timelineEnd - duration);
+      previewEnd = previewStart + duration;
+    } else if (mode === 'resize-start') {
+      previewStart = this.clamp(initialStart + deltaMs, timelineStart, previewEnd - minDuration);
+      previewStart = this.snapToWeek(previewStart);
+      previewStart = this.clamp(previewStart, timelineStart, previewEnd - minDuration);
+      previewEnd = Math.max(previewEnd, previewStart + minDuration);
+    } else {
+      previewEnd = this.clamp(initialEnd + deltaMs, previewStart + minDuration, timelineEnd);
+      previewEnd = this.snapToWeek(previewEnd);
+      previewEnd = this.clamp(previewEnd, previewStart + minDuration, timelineEnd);
+      previewStart = Math.min(previewStart, previewEnd - minDuration);
+    }
+    this.setPreview(task.uuid, previewStart, previewEnd);
+  };
+
+  private handlePointerUp = (): void => {
+    if (!this.dragState) {
+      return;
+    }
+    const { task } = this.dragState;
+    const preview = this.dragPreview()[task.uuid];
+    if (preview) {
+      const durationWeeks = Math.max(1, Math.round((preview.end - preview.start) / this.weekMs));
+      this.updateTaskTimeline.emit({ task, startDate: new Date(preview.start), durationWeeks });
+      this.clearPreview(task.uuid);
+    }
+    this.dragState = null;
+    window.removeEventListener('pointermove', this.handlePointerMove);
+    window.removeEventListener('pointerup', this.handlePointerUp);
+  };
+
+  private findTrackElement(element: HTMLElement | null): HTMLElement | null {
+    let current: HTMLElement | null = element;
+    while (current && !current.classList.contains('gantt-track')) {
+      current = current.parentElement;
+    }
+    return current;
+  }
+
+  private setPreview(taskUuid: string, start: number, end: number): void {
+    const snapshot = { ...this.dragPreview() };
+    snapshot[taskUuid] = { start, end };
+    this.dragPreview.set(snapshot);
+  }
+
+  private clearPreview(taskUuid: string): void {
+    const snapshot = { ...this.dragPreview() };
+    delete snapshot[taskUuid];
+    this.dragPreview.set(snapshot);
+  }
+
+  protected previewedStart(task: Task): number {
+    return this.dragPreview()[task.uuid]?.start ?? this.toDate(task.startDate).getTime();
+  }
+
+  protected previewedEnd(task: Task): number {
+    return this.dragPreview()[task.uuid]?.end ?? this.computeTaskEnd(task).getTime();
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  private snapToWeek(value: number): number {
+    const origin = this.timelineStart();
+    return origin + Math.round((value - origin) / this.weekMs) * this.weekMs;
   }
 }

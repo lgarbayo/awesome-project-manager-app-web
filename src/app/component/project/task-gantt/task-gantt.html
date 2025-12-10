@@ -62,7 +62,12 @@
                                     <span class="gantt-division" [style.left.%]="weekMarkerPosition(week)"></span>
                                     }
                                     <span class="gantt-bar" [style.left.%]="taskStartOffset(task)"
-                                        [style.width.%]="taskDurationPercent(task)">
+                                        [style.width.%]="taskDurationPercent(task)" [class.dragging]="isDragging(task.uuid)"
+                                        (pointerdown)="startDrag($event, task, 'move')">
+                                        <span class="gantt-handle start"
+                                            (pointerdown)="startDrag($event, task, 'resize-start')"></span>
+                                        <span class="gantt-handle end"
+                                            (pointerdown)="startDrag($event, task, 'resize-end')"></span>
                                         <span class="gantt-tooltip">{{ taskTooltip(task) }}</span>
                                     </span>
                                 </div>

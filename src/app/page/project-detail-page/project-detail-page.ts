@@ -304,6 +304,36 @@ export class ProjectDetailPage {
     this.closeSelectionModal(this.selectedTask, this.showTaskModal, () => this.taskForm?.resetForm());
   }
 
+  onTaskTimelineChange(change: { task: Task; startDate: Date; durationWeeks: number }): void {
+    this.withProjectUuid((projectUuid) => {
+      const updatedStart = this.fromDate(change.startDate);
+      const updatedTask: Task = {
+        ...change.task,
+        startDate: updatedStart,
+        durationWeeks: change.durationWeeks,
+      };
+      this.tasks.update((list) => this.sortTasksByStartDate(list.map((task) => (task.uuid === updatedTask.uuid ? updatedTask : task))));
+      const command: UpsertTaskCommand = {
+        title: updatedTask.title,
+        description: updatedTask.description,
+        durationWeeks: updatedTask.durationWeeks,
+        startDate: updatedStart,
+      };
+      this.taskService.update(projectUuid, updatedTask.uuid, command).subscribe({
+        next: () => {
+          this.taskError.set(null);
+          this.loadTasks(projectUuid);
+          this.loadAnalysis(projectUuid);
+        },
+        error: (error) => {
+          console.error('Error updating task', error);
+          this.taskError.set("Couldn't update the task timeline.");
+          this.loadTasks(projectUuid);
+        },
+      });
+    });
+  }
+
   // same as trackBy function in *ngFor:
   // is useful to tell Angular how to track items inn the list
   // each card should be tracked by its project.uuid, so Angular don't destroy and recreate DOM elements unnecessarily
@@ -560,5 +590,20 @@ export class ProjectDetailPage {
 
   private toDate(date: DateType): Date {
     return new Date(date.year, date.month ?? 0, 1 + (date.week ?? 0) * 7);
+  }
+
+  private fromDate(date: Date): DateType {
+    let year = date.getFullYear();
+    let month = date.getMonth();
+    let weekIndex = Math.floor((date.getDate() - 1) / 7);
+    while (weekIndex > 3) {
+      weekIndex -= 4;
+      month += 1;
+      if (month > 11) {
+        month = 0;
+        year += 1;
+      }
+    }
+    return { year, month, week: weekIndex };
   }
 }

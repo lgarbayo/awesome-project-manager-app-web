@@ -87,6 +87,7 @@
       (analyseTask)="openTaskAnalysis($event)"
       (editTask)="editTask($event)"
       (removeTask)="removeTask($event)"
+      (updateTaskTimeline)="onTaskTimelineChange($event)"
     ></app-task-gantt>
 
     @if (showProjectModal()) {
