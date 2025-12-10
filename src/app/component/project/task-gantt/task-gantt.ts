@@ -123,7 +123,7 @@ export class TaskGantt implements AfterViewInit {
     const baseline = this.computeTimelineBaseline(tasks, milestones);
     const end = this.computeTimelineEnd(tasks, milestones, baseline);
     const months = this.buildTimelineMonths(baseline, end);
-    const weeks = this.buildTimelineWeeks(months);
+    const weeks = this.buildTimelineWeeks(baseline, end);
     this.timelineStart.set(baseline);
     this.timelineDuration.set(Math.max(end - baseline, 1));
     this.months.set(months);
@@ -180,16 +180,20 @@ export class TaskGantt implements AfterViewInit {
     return months;
   }
 
-  private buildTimelineWeeks(months: Array<TimelineMonth>): Array<TimelineWeek> {
+  private buildTimelineWeeks(startMs: number, endMs: number): Array<TimelineWeek> {
     const weeks: Array<TimelineWeek> = [];
-    for (const month of months) {
-      const duration = month.end - month.start;
-      const weekDuration = duration / 4;
-      for (let index = 0; index < 4; index++) {
-        const start = month.start + index * weekDuration;
-        const end = index === 3 ? month.end : start + weekDuration;
-        weeks.push({ label: `${index + 1}`, start, end });
-      }
+    if (endMs <= startMs) {
+      return weeks;
+    }
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    let cursor = startMs;
+    let index = 1;
+    while (cursor < endMs) {
+      const start = cursor;
+      const end = Math.min(cursor + weekMs, endMs);
+      weeks.push({ label: `${index}`, start, end });
+      cursor = end;
+      index++;
     }
     return weeks;
   }
