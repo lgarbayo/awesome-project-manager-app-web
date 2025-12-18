@@ -6,7 +6,7 @@ import { Project, UpsertProjectCommand } from '../../model/project.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { Milestone, UpsertMilestoneCommand } from '../../model/milestone.model';
-import { Task, UpsertTaskCommand } from '../../model/task.model';
+import { Task, TaskEstimate, UpsertTaskCommand } from '../../model/task.model';
 import { MilestoneService } from '../../service/milestone-service';
 import { TaskService } from '../../service/task-service';
 import { AnalysisService } from '../../service/analysis-service';
@@ -64,6 +64,7 @@ export class ProjectDetailPage {
   selectedMilestoneDescription = signal<Milestone | null>(null);
   selectedTaskAnalysis = signal<TaskAnalysis | null>(null);
   selectedTaskDescription = signal<Task | null>(null);
+  selectedTaskEstimate = signal<Task | null>(null);
 
   selectedMilestone = signal<Milestone | null>(null);
   selectedTask = signal<Task | null>(null);
@@ -86,6 +87,11 @@ export class ProjectDetailPage {
   showTaskAnalysisModal = signal(false);
   showMilestoneDescriptionModal = signal(false);
   showTaskDescriptionModal = signal(false);
+  showTaskEstimateModal = signal(false);
+
+  taskEstimate = signal<TaskEstimate | null>(null);
+  taskEstimateLoading = signal(false);
+  taskEstimateError = signal<string | null>(null);
 
 
   constructor() {
@@ -198,6 +204,23 @@ export class ProjectDetailPage {
 
   closeTaskDescription(): void {
     this.closeSelectionModal(this.selectedTaskDescription, this.showTaskDescriptionModal);
+  }
+
+  estimateTask(task: Task): void {
+    this.openSelectionModal(this.selectedTaskEstimate, this.showTaskEstimateModal, task);
+    this.withProjectUuid((projectUuid) => this.requestTaskEstimate(projectUuid, task.uuid));
+  }
+
+  closeTaskEstimate(): void {
+    this.closeSelectionModal(this.selectedTaskEstimate, this.showTaskEstimateModal, () => this.resetTaskEstimateState());
+  }
+
+  retryTaskEstimate(): void {
+    const task = this.selectedTaskEstimate();
+    if (!task) {
+      return;
+    }
+    this.withProjectUuid((projectUuid) => this.requestTaskEstimate(projectUuid, task.uuid));
   }
 
   saveMilestone(command: UpsertMilestoneCommand): void {
@@ -577,6 +600,23 @@ export class ProjectDetailPage {
     });
   }
 
+  private requestTaskEstimate(projectUuid: string, taskUuid: string): void {
+    this.taskEstimateLoading.set(true);
+    this.taskEstimateError.set(null);
+    this.taskEstimate.set(null);
+    this.taskService.estimate(projectUuid, taskUuid).subscribe({
+      next: (estimate) => {
+        this.taskEstimate.set(estimate);
+        this.taskEstimateLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error retrieving task estimate', error);
+        this.taskEstimateError.set(this.resolveTaskEstimateError(error));
+        this.taskEstimateLoading.set(false);
+      },
+    });
+  }
+
   private sortTasksByStartDate(list: Array<Task>): Array<Task> {
     return [...list].sort((a, b) => {
       const dateA = this.toDate(a.startDate).getTime();
@@ -586,6 +626,38 @@ export class ProjectDetailPage {
       }
       return dateA - dateB;
     });
+  }
+
+  private resetTaskEstimateState(): void {
+    this.taskEstimate.set(null);
+    this.taskEstimateError.set(null);
+    this.taskEstimateLoading.set(false);
+  }
+
+  private resolveTaskEstimateError(error: unknown): string {
+    const fallback = "Couldn't get the task estimate.";
+    if (!error || typeof error !== 'object') {
+      return fallback;
+    }
+    const status = (error as { status?: number }).status;
+    if (status === 502) {
+      return 'servicio externo no disponible, inténtalo luego';
+    }
+    const backendMessage = this.extractBackendErrorMessage((error as { error?: unknown }).error);
+    return backendMessage ?? fallback;
+  }
+
+  private extractBackendErrorMessage(payload: unknown): string | null {
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+    if ('description' in payload && typeof (payload as { description?: unknown }).description === 'string') {
+      return (payload as { description: string }).description;
+    }
+    if ('message' in payload && typeof (payload as { message?: unknown }).message === 'string') {
+      return (payload as { message: string }).message;
+    }
+    return null;
   }
 
   private toDate(date: DateType): Date {

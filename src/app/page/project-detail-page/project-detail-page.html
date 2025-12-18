@@ -85,6 +85,7 @@
       (addTask)="openTaskModal()"
       (describeTask)="openTaskDescription($event)"
       (analyseTask)="openTaskAnalysis($event)"
+      (estimateTask)="estimateTask($event)"
       (editTask)="editTask($event)"
       (removeTask)="removeTask($event)"
       (updateTaskTimeline)="onTaskTimelineChange($event)"
@@ -295,6 +296,40 @@
           </div>
           <div class="modal-body">
             <p>{{ taskDescription.description || 'No description.' }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showTaskEstimateModal() && selectedTaskEstimate(); as taskEstimateTarget) {
+      <div class="modal-backdrop" (click)="closeTaskEstimate()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">{{ taskEstimateTarget.title }} estimate</h2>
+            <button class="btn ghost" type="button" (click)="closeTaskEstimate()">Close</button>
+          </div>
+          <div class="modal-body stack-md">
+            <p class="muted">Each run can change a bit, feel free to ask for a new estimate.</p>
+            @if (taskEstimateLoading()) {
+              <p>Requesting estimate...</p>
+            }
+            @if (taskEstimateError(); as estimateError) {
+              <p class="error">{{ estimateError }}</p>
+            }
+            @if (taskEstimate(); as estimateResult) {
+              <div class="stack-sm">
+                <p class="summary-label">Estimated hours</p>
+                <p class="summary-value">{{ estimateResult.hours }}</p>
+                <p>{{ estimateResult.explanation }}</p>
+              </div>
+            } @else if (!taskEstimateLoading() && !taskEstimateError()) {
+              <p class="muted">Waiting for the estimate.</p>
+            }
+            <div class="row">
+              <button class="btn primary" type="button" (click)="retryTaskEstimate()" [disabled]="taskEstimateLoading()">
+                Request new estimate
+              </button>
+            </div>
           </div>
         </div>
       </div>

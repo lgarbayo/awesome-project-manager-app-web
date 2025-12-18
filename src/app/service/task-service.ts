@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Task, UpsertTaskCommand, UpsertTaskCommandForm } from '../model/task.model';
+import { Task, TaskEstimate, UpsertTaskCommand, UpsertTaskCommandForm } from '../model/task.model';
 import { CoreService } from './core-service';
 
 @Injectable({
@@ -32,6 +32,10 @@ export class TaskService {
 
   delete(projectUuid: string, taskUuid: string): Observable<void> {
     return this.http.delete<void>(`${this.projectUrl}/${projectUuid}/task/${taskUuid}`);
+  }
+
+  estimate(projectUuid: string, taskUuid: string): Observable<TaskEstimate> {
+    return this.http.post<TaskEstimate>(`${this.projectUrl}/${projectUuid}/task/${taskUuid}/estimate`, {});
   }
 
   taskForm(task?: Task): UpsertTaskCommandForm {

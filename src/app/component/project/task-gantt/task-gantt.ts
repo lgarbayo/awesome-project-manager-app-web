@@ -36,6 +36,7 @@ export class TaskGantt implements AfterViewInit {
   addTask = output<void>();
   describeTask = output<Task>();
   analyseTask = output<string>();
+  estimateTask = output<Task>();
   editTask = output<Task>();
   removeTask = output<string>();
   updateTaskTimeline = output<{ task: Task; startDate: Date; durationWeeks: number }>();

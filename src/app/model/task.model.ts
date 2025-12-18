@@ -10,6 +10,11 @@ export interface Task {
   startDate: DateType;
 }
 
+export interface TaskEstimate {
+  hours: number;
+  explanation: string;
+}
+
 export interface UpsertTaskCommand {
   title: string;
   description?: string;
