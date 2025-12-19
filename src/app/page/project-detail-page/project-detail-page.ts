@@ -6,7 +6,7 @@ import { Project, UpsertProjectCommand } from '../../model/project.model';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { Milestone, UpsertMilestoneCommand } from '../../model/milestone.model';
-import { Task, TaskEstimate, UpsertTaskCommand } from '../../model/task.model';
+import { Task, TaskDescriptionResponse, TaskEstimate, UpsertTaskCommand } from '../../model/task.model';
 import { MilestoneService } from '../../service/milestone-service';
 import { TaskService } from '../../service/task-service';
 import { AnalysisService } from '../../service/analysis-service';
@@ -65,6 +65,7 @@ export class ProjectDetailPage {
   selectedTaskAnalysis = signal<TaskAnalysis | null>(null);
   selectedTaskDescription = signal<Task | null>(null);
   selectedTaskEstimate = signal<Task | null>(null);
+  selectedTaskSuggestion = signal<Task | null>(null);
 
   selectedMilestone = signal<Milestone | null>(null);
   selectedTask = signal<Task | null>(null);
@@ -88,10 +89,15 @@ export class ProjectDetailPage {
   showMilestoneDescriptionModal = signal(false);
   showTaskDescriptionModal = signal(false);
   showTaskEstimateModal = signal(false);
+  showTaskSuggestionModal = signal(false);
 
   taskEstimate = signal<TaskEstimate | null>(null);
   taskEstimateLoading = signal(false);
   taskEstimateError = signal<string | null>(null);
+  taskSuggestion = signal<TaskDescriptionResponse | null>(null);
+  taskSuggestionLoading = signal(false);
+  taskSuggestionError = signal<string | null>(null);
+  taskSuggestionPrompt = signal('');
 
 
   constructor() {
@@ -204,6 +210,26 @@ export class ProjectDetailPage {
 
   closeTaskDescription(): void {
     this.closeSelectionModal(this.selectedTaskDescription, this.showTaskDescriptionModal);
+  }
+
+  describeTaskWithAi(task: Task): void {
+    this.openSelectionModal(this.selectedTaskSuggestion, this.showTaskSuggestionModal, task);
+    this.taskSuggestionPrompt.set('');
+    this.resetTaskSuggestionState();
+    this.withProjectUuid((projectUuid) => this.requestTaskSuggestion(projectUuid, task.uuid));
+  }
+
+  closeTaskSuggestion(): void {
+    this.closeSelectionModal(this.selectedTaskSuggestion, this.showTaskSuggestionModal, () => {
+      this.taskSuggestionPrompt.set('');
+      this.resetTaskSuggestionState();
+    });
+  }
+
+  retryTaskSuggestion(): void {
+    const task = this.selectedTaskSuggestion();
+    if (!task) return;
+    this.withProjectUuid((projectUuid) => this.requestTaskSuggestion(projectUuid, task.uuid, this.taskSuggestionPrompt().trim()));
   }
 
   estimateTask(task: Task): void {
@@ -617,6 +643,23 @@ export class ProjectDetailPage {
     });
   }
 
+  private requestTaskSuggestion(projectUuid: string, taskUuid: string, prompt?: string): void {
+    this.taskSuggestionLoading.set(true);
+    this.taskSuggestionError.set(null);
+    this.taskSuggestion.set(null);
+    this.taskService.describe(projectUuid, taskUuid, prompt).subscribe({
+      next: (suggestion) => {
+        this.taskSuggestion.set(suggestion);
+        this.taskSuggestionLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error retrieving task description', error);
+        this.taskSuggestionError.set(this.resolveTaskEstimateError(error));
+        this.taskSuggestionLoading.set(false);
+      },
+    });
+  }
+
   private sortTasksByStartDate(list: Array<Task>): Array<Task> {
     return [...list].sort((a, b) => {
       const dateA = this.toDate(a.startDate).getTime();
@@ -634,6 +677,12 @@ export class ProjectDetailPage {
     this.taskEstimateLoading.set(false);
   }
 
+  private resetTaskSuggestionState(): void {
+    this.taskSuggestion.set(null);
+    this.taskSuggestionError.set(null);
+    this.taskSuggestionLoading.set(false);
+  }
+
   private resolveTaskEstimateError(error: unknown): string {
     const fallback = "Couldn't get the task estimate.";
     if (!error || typeof error !== 'object') {
@@ -641,7 +690,7 @@ export class ProjectDetailPage {
     }
     const status = (error as { status?: number }).status;
     if (status === 502) {
-      return 'servicio externo no disponible, inténtalo luego';
+      return 'external service unavailable, try again later';
     }
     const backendMessage = this.extractBackendErrorMessage((error as { error?: unknown }).error);
     return backendMessage ?? fallback;

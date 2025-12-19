@@ -85,6 +85,7 @@
       (addTask)="openTaskModal()"
       (describeTask)="openTaskDescription($event)"
       (analyseTask)="openTaskAnalysis($event)"
+      (aiDescribeTask)="describeTaskWithAi($event)"
       (estimateTask)="estimateTask($event)"
       (editTask)="editTask($event)"
       (removeTask)="removeTask($event)"
@@ -330,6 +331,54 @@
                 Request new estimate
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showTaskSuggestionModal() && selectedTaskSuggestion(); as taskSuggestionTarget) {
+      <div class="modal-backdrop" (click)="closeTaskSuggestion()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="title">{{ taskSuggestionTarget.title }} AI description</h2>
+            <button class="btn ghost" type="button" (click)="closeTaskSuggestion()">Close</button>
+          </div>
+          <div class="modal-body stack-md">
+            <p class="muted">Ask the assistant for a new description. You can tweak the prompt below.</p>
+            <label class="summary-label" for="aiPrompt">Prompt (optional)</label>
+            <textarea
+              id="aiPrompt"
+              rows="3"
+              [value]="taskSuggestionPrompt()"
+              (input)="taskSuggestionPrompt.set($any($event.target).value)"
+            ></textarea>
+            <div class="row">
+              <button class="btn primary" type="button" (click)="retryTaskSuggestion()" [disabled]="taskSuggestionLoading()">
+                Generate description
+              </button>
+            </div>
+            @if (taskSuggestionLoading()) {
+              <p>Requesting description...</p>
+            }
+            @if (taskSuggestionError(); as suggestionError) {
+              <p class="error">{{ suggestionError }}</p>
+            }
+            @if (taskSuggestion(); as suggestion) {
+              <div class="stack-sm">
+                <p class="summary-label">Suggested title</p>
+                <p class="summary-value">{{ suggestion.title }}</p>
+                <p class="summary-label">Suggested description</p>
+                <p>{{ suggestion.description }}</p>
+                @if (suggestion.rawAnswer) {
+                  <details>
+                    <summary>Raw answer</summary>
+                    <p class="muted">{{ suggestion.rawAnswer }}</p>
+                  </details>
+                }
+              </div>
+            } @else if (!taskSuggestionLoading() && !taskSuggestionError()) {
+              <p class="muted">No suggestion yet. Try generating one.</p>
+            }
           </div>
         </div>
       </div>
