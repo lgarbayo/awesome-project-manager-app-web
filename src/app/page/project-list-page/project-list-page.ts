@@ -23,6 +23,7 @@ export class ProjectListPage implements OnInit {
   loading = signal(false);
   errorMessage = signal<string | null>(null);
   showCreateModal = signal(false);
+  private lastUpdatedAt = signal<Date | null>(null);
 
   ngOnInit(): void {
     this.loadProjects();
@@ -37,7 +38,7 @@ export class ProjectListPage implements OnInit {
       },
       error: (error) => {
         console.error('Unable to fetch project list', error);
-        this.errorMessage.set('We couldn\'t load the project list.');
+        this.errorMessage.set("We couldn't load the project list.");
         this.loading.set(false);
       },
       complete: () => this.loading.set(false),
@@ -84,5 +85,14 @@ export class ProjectListPage implements OnInit {
   // each card should be tracked by its project.uuid, so Angular don't destroy and recreate DOM elements unnecessarily
   trackProject(_: number, project: Project): string {
     return project.uuid;
+  }
+
+  private toDateValue(date: Project['startDate'] | Project['endDate'] | undefined): number {
+    if (!date || typeof date.year !== 'number') {
+      return Number.POSITIVE_INFINITY;
+    }
+    const month = typeof date.month === 'number' ? date.month : 0;
+    const week = typeof date.week === 'number' ? date.week : 0;
+    return new Date(date.year, month, 1 + week * 7).getTime();
   }
 }

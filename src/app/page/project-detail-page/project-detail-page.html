@@ -2,7 +2,7 @@
   <!-- project form -->
   @if (project(); as projectDetail) {
     <div class="detail-grid">
-      <article class="card pad stack-md project-summary-card">
+      <article class="card pad stack-md project-summary-card hero-surface">
         <div class="row row-refresh">
           <div>
             <h2 class="title">{{ projectDetail.title }}</h2>
@@ -20,7 +20,14 @@
           </div>
         </div>
         <div class="row project-actions-row">
-          <button class="btn ghost" type="button" (click)="openAnalysisModal()">ANALYSIS</button>
+          <button
+            class="btn ghost icon-only action-icon"
+            type="button"
+            (click)="openAnalysisModal()"
+            aria-label="View project analysis"
+          >
+            <img src="/analysis.svg" alt="" width="20" height="20" aria-hidden="true" />
+          </button>
           <button class="btn ghost icon-only" type="button" (click)="openProjectModal()">
             <img src="/edit.svg" alt="Edit project" width="20" height="20" />
           </button>
@@ -58,8 +65,22 @@
                     <td>{{ milestone.title }}</td>
                     <td>{{ core.formatDateLabel(milestone.date) }}</td>
                     <td class="table-actions">
-                      <button class="btn ghost" type="button" (click)="openMilestoneDescription(milestone)">DESCRIPTION</button>
-                      <button class="btn ghost" type="button" (click)="openMilestoneAnalysis(milestone.uuid)">ANALYSIS</button>
+                      <button
+                        class="btn ghost icon-only"
+                        type="button"
+                        (click)="openMilestoneDescription(milestone)"
+                        aria-label="View milestone description"
+                      >
+                        <img src="/eye.svg" alt="" width="20" height="20" />
+                      </button>
+                      <button
+                        class="btn ghost icon-only action-icon"
+                        type="button"
+                        (click)="openMilestoneAnalysis(milestone.uuid)"
+                        aria-label="View milestone analysis"
+                      >
+                        <img src="/analysis.svg" alt="" width="20" height="20" aria-hidden="true" />
+                      </button>
                       <button class="btn ghost icon-only" type="button" (click)="editMilestone(milestone)">
                         <img src="/edit.svg" alt="Edit milestone" width="20" height="20" />
                       </button>
@@ -163,23 +184,46 @@
               <p class="error">{{ error }}</p>
             }
             @if (analysis(); as data) {
-              <div class="analysis stack-md">
+              <div class="analysis-grid">
                 @for (milestoneAnalysis of data.milestoneList; track milestoneAnalysis.milestoneUuid) {
-                  <article class="task">
-                    <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
-                    <p class="muted">
-                      {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
-                      {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
-                    </p>
-                    <p>
-                      Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-                      {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
-                    </p>
-                    <ul class="stack-sm">
+                  <article class="analysis-card">
+                    <div class="analysis-card__header">
+                      <div>
+                        <p class="analysis-card__label">Milestone</p>
+                        <h3 class="analysis-card__title">{{ milestoneAnalysis.milestoneTitle }}</h3>
+                        <p class="analysis-card__dates">
+                          {{ core.formatDateLabel(milestoneAnalysis.startDate) }} →
+                          {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
+                        </p>
+                      </div>
+                      <div
+                        class="analysis-badge"
+                        [class.analysis-badge--up]="milestoneAnalysis.endCompletion >= milestoneAnalysis.initialCompletion"
+                        [class.analysis-badge--down]="milestoneAnalysis.endCompletion < milestoneAnalysis.initialCompletion"
+                      >
+                        <span class="analysis-badge__value">{{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
+                        <span class="analysis-badge__delta">
+                          {{ milestoneAnalysis.endCompletion >= milestoneAnalysis.initialCompletion ? '+' : '' }}
+                          {{ (milestoneAnalysis.endCompletion - milestoneAnalysis.initialCompletion) * 100 | number:'1.0-0' }}%
+                        </span>
+                      </div>
+                    </div>
+                    <div class="analysis-meter" role="img" aria-label="Progress from initial to final">
+                      <div class="analysis-meter__initial" [style.width]="(milestoneAnalysis.initialCompletion * 100) + '%'" aria-hidden="true"></div>
+                      <div class="analysis-meter__final" [style.width]="(milestoneAnalysis.endCompletion * 100) + '%'" aria-hidden="true"></div>
+                    </div>
+                    <ul class="analysis-task-list" aria-label="Task breakdown">
                       @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
-                        <li>
-                          {{ taskAnalysis.taskTitle }} · {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-                          {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                        <li class="analysis-task-list__item">
+                          <span class="analysis-task-list__title">{{ taskAnalysis.taskTitle }}</span>
+                          <span
+                            class="analysis-task-list__delta"
+                            [class.positive]="taskAnalysis.endCompletion >= taskAnalysis.initialCompletion"
+                            [class.negative]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+                          >
+                            {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% →
+                            {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                          </span>
                         </li>
                       }
                     </ul>
@@ -205,36 +249,52 @@
             @if (milestoneAnalysisMessage(); as message) {
               <p class="muted">{{ message }}</p>
             } @else if (selectedMilestoneAnalysis(); as milestoneAnalysis) {
-              <h3>{{ milestoneAnalysis.milestoneTitle }}</h3>
-              <p class="muted">
-                {{ core.formatDateLabel(milestoneAnalysis.startDate) }} ->
-                {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
-              </p>
-              <p>
-                Progress: {{ milestoneAnalysis.initialCompletion * 100 | number:'1.0-0' }}% ->
-                {{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%
-              </p>
-              @if (milestoneAnalysis.taskList.length === 0) {
-                <p>No task analysis available.</p>
-              } @else {
-                <ul class="stack-sm analysis-list">
-                  @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
-                    <li class="analysis-item">
-                      <span>{{ taskAnalysis.taskTitle }}</span>
-                      <span
-                        class="analysis-chip"
-                        [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
-                      >
-                        <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
-                        <span class="chip-arrow">
-                          {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
+              <article class="analysis-card analysis-card--modal">
+                <div class="analysis-card__header">
+                  <div>
+                    <p class="analysis-card__label">Milestone</p>
+                    <h3 class="analysis-card__title">{{ milestoneAnalysis.milestoneTitle }}</h3>
+                    <p class="analysis-card__dates">
+                      {{ core.formatDateLabel(milestoneAnalysis.startDate) }} →
+                      {{ core.formatDateLabel(milestoneAnalysis.endDate) }}
+                    </p>
+                  </div>
+                  <div
+                    class="analysis-badge"
+                    [class.analysis-badge--up]="milestoneAnalysis.endCompletion >= milestoneAnalysis.initialCompletion"
+                    [class.analysis-badge--down]="milestoneAnalysis.endCompletion < milestoneAnalysis.initialCompletion"
+                  >
+                    <span class="analysis-badge__value">{{ milestoneAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
+                    <span class="analysis-badge__delta">
+                      {{ milestoneAnalysis.endCompletion >= milestoneAnalysis.initialCompletion ? '+' : '' }}
+                      {{ (milestoneAnalysis.endCompletion - milestoneAnalysis.initialCompletion) * 100 | number:'1.0-0' }}%
+                    </span>
+                  </div>
+                </div>
+                <div class="analysis-meter" role="img" aria-label="Progress from initial to final">
+                  <div class="analysis-meter__initial" [style.width]="(milestoneAnalysis.initialCompletion * 100) + '%'" aria-hidden="true"></div>
+                  <div class="analysis-meter__final" [style.width]="(milestoneAnalysis.endCompletion * 100) + '%'" aria-hidden="true"></div>
+                </div>
+                @if (milestoneAnalysis.taskList.length === 0) {
+                  <p class="muted">No task analysis available.</p>
+                } @else {
+                  <ul class="analysis-task-list" aria-label="Task breakdown">
+                    @for (taskAnalysis of milestoneAnalysis.taskList; track taskAnalysis.taskUuid) {
+                      <li class="analysis-task-list__item">
+                        <span class="analysis-task-list__title">{{ taskAnalysis.taskTitle }}</span>
+                        <span
+                          class="analysis-task-list__delta"
+                          [class.positive]="taskAnalysis.endCompletion >= taskAnalysis.initialCompletion"
+                          [class.negative]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+                        >
+                          {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% →
+                          {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
                         </span>
-                        <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
-                      </span>
-                    </li>
-                  }
-                </ul>
-              }
+                      </li>
+                    }
+                  </ul>
+                }
+              </article>
             } @else {
               <p class="muted">No milestone analysis data available yet.</p>
             }
@@ -254,18 +314,30 @@
             @if (taskAnalysisMessage(); as message) {
               <p class="muted">{{ message }}</p>
             } @else if (selectedTaskAnalysis(); as taskAnalysis) {
-              <h3>{{ taskAnalysis.taskTitle }}</h3>
-              <p class="muted">Task progress</p>
-              <div
-                class="analysis-chip"
-                [class.analysis-chip--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
-              >
-                <span>{{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}%</span>
-                <span class="chip-arrow">
-                  {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '↑' : '↓' }}
-                </span>
-                <span>{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
-              </div>
+              <article class="analysis-card analysis-card--modal">
+                <div class="analysis-card__header">
+                  <div>
+                    <p class="analysis-card__label">Task</p>
+                    <h3 class="analysis-card__title">{{ taskAnalysis.taskTitle }}</h3>
+                    <p class="analysis-card__dates">Completion trend</p>
+                  </div>
+                  <div
+                    class="analysis-badge"
+                    [class.analysis-badge--up]="taskAnalysis.endCompletion >= taskAnalysis.initialCompletion"
+                    [class.analysis-badge--down]="taskAnalysis.endCompletion < taskAnalysis.initialCompletion"
+                  >
+                    <span class="analysis-badge__value">{{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%</span>
+                    <span class="analysis-badge__delta">
+                      {{ taskAnalysis.endCompletion >= taskAnalysis.initialCompletion ? '+' : '' }}
+                      {{ (taskAnalysis.endCompletion - taskAnalysis.initialCompletion) * 100 | number:'1.0-0' }}%
+                    </span>
+                  </div>
+                </div>
+                <div class="analysis-meter" role="img" aria-label="Progress from initial to final">
+                  <div class="analysis-meter__initial" [style.width]="(taskAnalysis.initialCompletion * 100) + '%'" aria-hidden="true"></div>
+                  <div class="analysis-meter__final" [style.width]="(taskAnalysis.endCompletion * 100) + '%'" aria-hidden="true"></div>
+                </div>
+              </article>
             } @else {
               <p class="muted">No task analysis data available yet.</p>
             }

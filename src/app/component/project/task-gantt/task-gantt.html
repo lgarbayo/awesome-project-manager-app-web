@@ -62,7 +62,8 @@
                                     <span class="gantt-division" [style.left.%]="weekMarkerPosition(week)"></span>
                                     }
                                     <span class="gantt-bar" [style.left.%]="taskStartOffset(task)"
-                                        [style.width.%]="taskDurationPercent(task)" [class.dragging]="isDragging(task.uuid)"
+                                        [style.width.%]="taskDurationPercent(task)"
+                                        [class.dragging]="isDragging(task.uuid)"
                                         (pointerdown)="startDrag($event, task, 'move')">
                                         <span class="gantt-handle start"
                                             (pointerdown)="startDrag($event, task, 'resize-start')"></span>
@@ -75,9 +76,22 @@
                         </div>
                     </td>
                     <td class="table-actions">
-                        <button class="btn ghost" type="button" (click)="describeTask.emit(task)">DESCRIPTION</button>
-                        <button class="btn ghost" type="button" (click)="analyseTask.emit(task.uuid)">ANALYSIS</button>
-                        <button class="btn ghost" type="button" (click)="estimateTask.emit(task)">ESTIMATE</button>
+                        <button class="btn ghost icon-only" type="button" (click)="describeTask.emit(task)"
+                            aria-label="View task description">
+                            <img src="/eye.svg" alt="" width="20" height="20" />
+                        </button>
+                        <button class="btn ghost icon-only action-icon" type="button"
+                            (click)="analyseTask.emit(task.uuid)" aria-label="View analysis">
+                            <img src="/analysis.svg" width="20" height="20" alt="" aria-hidden="true" />
+                        </button>
+                        <button class="btn ghost icon-only action-icon" type="button" (click)="estimateTask.emit(task)"
+                            aria-label="Estimate task">
+                            <img src="/brain.svg" width="20" height="20" alt="" aria-hidden="true" />
+                        </button>
+                        <button class="btn ghost icon-only action-icon" type="button"
+                            (click)="aiDescribeTask.emit(task)" aria-label="AI description">
+                            <img src="/description.svg" width="20" height="20" alt="" aria-hidden="true" />
+                        </button>
                         <button class="btn ghost icon-only" type="button" (click)="editTask.emit(task)">
                             <img src="/edit.svg" alt="Edit task" width="20" height="20" />
                         </button>

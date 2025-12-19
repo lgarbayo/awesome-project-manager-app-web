@@ -1,18 +1,7 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <linearGradient id="ui_blue_grad_2" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#005bea"/>
-            <stop offset="1" stop-color="#00c6fb"/>
-        </linearGradient>
-        <linearGradient id="ui_accent_grad_2" x1="10" y1="54" x2="25" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#ffba00"/>
-            <stop offset="1" stop-color="#ff5e00"/>
-        </linearGradient>
-    </defs>
-
-    <path d="M46.5 6.5C49.5 3.5 54.5 3.5 57.5 6.5C60.5 9.5 60.5 14.5 57.5 17.5L24 51L13 62L2 51L13 40L46.5 6.5Z" fill="url(#ui_blue_grad_2)"/>
-
-    <path d="M2 51L13 62L16 56L8 48L2 51Z" fill="url(#ui_accent_grad_2)"/>
-
-    <path d="M42 16L48 22" stroke="white" stroke-opacity="0.3" stroke-width="2" stroke-linecap="round"/>
-</svg>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M8.56078 20.2501L20.5608 8.25011L15.7501 3.43945L3.75012 15.4395V20.2501H8.56078ZM15.7501 5.56077L18.4395 8.25011L16.5001 10.1895L13.8108 7.50013L15.7501 5.56077ZM12.7501 8.56079L15.4395 11.2501L7.93946 18.7501H5.25012L5.25012 16.0608L12.7501 8.56079Z" fill="#080341"/> </g>
+</svg>

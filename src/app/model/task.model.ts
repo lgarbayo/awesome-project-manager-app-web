@@ -15,6 +15,12 @@ export interface TaskEstimate {
   explanation: string;
 }
 
+export interface TaskDescriptionResponse {
+  title: string;
+  description: string;
+  rawAnswer: string;
+}
+
 export interface UpsertTaskCommand {
   title: string;
   description?: string;
