@@ -1,9 +1,23 @@
 import { inject, Injectable } from '@angular/core';
-import { FormControl, NonNullableFormBuilder, Validators } from '@angular/forms';
+import { FormControl, NonNullableFormBuilder, ValidatorFn, Validators } from '@angular/forms';
 import { Project, UpsertProjectCommand, UpsertProjectCommandForm } from '../model/project.model';
 import { CoreService } from './core-service';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+
+const trimmedRequired: ValidatorFn = control => {
+  const value = (control.value ?? '') as string;
+  return value.trim() ? null : { required: true };
+};
+
+const dateRangeValidator: ValidatorFn = group => {
+  const start = group.get('startDate')?.value;
+  const end = group.get('endDate')?.value;
+  if (!start || !end) return null;
+  const startValue = new Date(start.year, start.month, 1 + start.week * 7);
+  const endValue = new Date(end.year, end.month, 1 + end.week * 7);
+  return startValue <= endValue ? null : { dateRange: true };
+};
 
 @Injectable({
   providedIn: 'root',
@@ -36,12 +50,13 @@ export class ProjectService {
 
   projectForm(project?: Project): UpsertProjectCommandForm {
     return this.nfb.group({
-      title: [project?.title ?? '', [Validators.required]],
+      title: [project?.title ?? '', [trimmedRequired]],
       description: project?.description ?? '',
       startDate: this.coreService.dateTypeForm(project?.startDate),
       endDate: this.coreService.dateTypeForm(project?.endDate),
       additionalFields: this.additionalFieldsForm(project?.additionalFields ?? {}),
-    });
+    },
+    { validators: dateRangeValidator });
   }
 
   private additionalFieldsForm(additionalFields: Record<string, string>) {

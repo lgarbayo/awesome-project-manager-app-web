@@ -1,119 +1,108 @@
-<button (click)="add()" [class.color-red]="color() == 'red'" [class.color-orange]="color() == 'orange'">
-    ADD TASK
-</button>
-<div class="container-fluid" [formGroup]="form">
-    <div class="row border-bottom">
-        <!-- Duration-->
-        <div class="col-6" formGroupName="start">
-            <strong>Start</strong>
-            <div class="row">
-                <div class="col-6">
-
-                    <label>Year</label>
-                    <input type="number" formControlName="year">
-
-                </div>
-                <div class="col-6">
-
-                    <!-- TODO generalize-->
-                    <label>Month</label>
-                    <select formControlName="month">
-                        <option [value]="0">January</option>
-                        <option [value]="1">February</option>
-                        <option [value]="2">March</option>
-                        <option [value]="3">April</option>
-                        <option [value]="4">May</option>
-                        <option [value]="5">June</option>
-                        <option [value]="6">July</option>
-                        <option [value]="7">August</option>
-                        <option [value]="8">September</option>
-                        <option [value]="9">October</option>
-                        <option [value]="10">November</option>
-                        <option [value]="11">December</option>
-                    </select>
-
-                </div>
-            </div>
-        </div>
-        <div class="col-6" formGroupName="end">
-            <strong>End</strong>
-            <div class="row">
-                <div class="col-6">
-                    <label>Year</label>
-                    <input matInput type="number" formControlName="year">
-                </div>
-                <div class="col-6">
-                    <!-- TODO generalize-->
-                    <label>Month</label>
-                    <select formControlName="month">
-                        <option [value]="0">January</option>
-                        <option [value]="1">February</option>
-                        <option [value]="2">March</option>
-                        <option [value]="3">April</option>
-                        <option [value]="4">May</option>
-                        <option [value]="5">June</option>
-                        <option [value]="6">July</option>
-                        <option [value]="7">August</option>
-                        <option [value]="8">September</option>
-                        <option [value]="9">October</option>
-                        <option [value]="10">November</option>
-                        <option [value]="11">December</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+<article class="card pad stack-md table-card tasks">
+    <div class="row row-refresh">
+        <h2 class="title">Tasks</h2>
+        <button class="btn primary icon-only" type="button" (click)="addTask.emit()">
+            <img src="/add.svg" alt="Add task" width="24" height="24" />
+        </button>
     </div>
-    
-</div>
-<div class="container-fluid" [formGroup]="form">
-    <div class="row">
-        <div class="col-12">
-            <button (click)="toExcel2()">Download table?</button>
-            <table id="LaTabla">
-                <thead class="bold-border">
-                    <tr class="header">
-                        <th rowspan="2" class="bold-border-right">Task</th>
-                        <th rowspan="2" class="bold-border-right">Duration<br />weeks</th>
-                        @for(m of months; track m.key; let index = $index) {
-                        <th colspan="4" class="bold-border-bottom"
-                            [class]="{'bold-border-right': index !== months.length -1 }">{{ m.year }}-{{ m.month + 1 }}
-                        </th>
-                        }
-                    </tr>
-                    <tr>
-                        @for(w of weeks; track w.key) {
-                        <th [class]="{'bold-border-right': w.offset == 3}">{{ w.offset }}</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody formArrayName="tasks" class="bold-border">
-                    <!-- Task rows are rendered here -->
-                    @for(item of tasks.controls; track item; let index = $index) {
-                    <tr [formGroupName]="index">
-                        <th scope="col" class="bold-border-right">
-                            <input type="text" formControlName="name">
-                            <span class="not-visible">
-                                {{ tasks.controls.at(index)?.value?.name}}
-                            </span>
-                        </th>
-                        <td class="bold-border-right">
-                            <input type="number" formControlName="weeks" [style.width.px]="50">
-                            <span class="not-visible">
-                                {{ tasks.controls.at(index)?.value?.weeks}}
-                            </span>
-                        </td>
-                        @for(w of weeks; track w.key) {
-                        <td (click)="setStart(index, w)" style="cursor: pointer;"
-                            [class]="{'bold-border-right': w.offset == 3, 'selected': isSelected(index, w)}">
-                            <span class="not-visible">
-                                &nbsp;
-                            </span>
-                        </td>
-                        }
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+    @if (loading()) {
+    <p>Loading tasks...</p>
+    }
+    @if (error(); as taskError) {
+    <p class="error">{{ taskError }}</p>
+    }
+    @if (!loading() && !hasTasks()) {
+    <p>No tasks registered yet.</p>
+    } @else {
+    <div class="table-wrapper">
+        <table class="data-table task-table">
+            <colgroup>
+                <col class="col-title" />
+                <col class="col-duration" />
+                <col class="col-schedule" />
+                <col class="col-actions" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Duration</th>
+                    <th class="gantt-header schedule-col">
+                        <div class="gantt-scroll" #ganttViewport (scroll)="onGanttScroll($event)">
+                            <div class="gantt-content" [style.width.px]="timelineWidth()">
+                                <div class="gantt-scale">
+                                    <div class="gantt-month-row">
+                                        @for (month of timelineMonths(); track month.start) {
+                                        <span class="gantt-month" [style.width.%]="monthWidth(month)">{{ month.label
+                                            }}</span>
+                                        }
+                                    </div>
+                                    <div class="gantt-week-row">
+                                        @for (week of timelineWeeks(); track week.start) {
+                                        <span class="gantt-week-label" [style.left.%]="weekMarkerPosition(week)">{{
+                                            week.label }}</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (task of taskList(); track task.uuid) {
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.durationWeeks }} weeks</td>
+                    <td class="gantt-cell schedule-col">
+                        <div class="gantt-scroll gantt-scroll--row" #ganttRow (scroll)="onGanttScroll($event)">
+                            <div class="gantt-content" [style.width.px]="timelineWidth()">
+                                <div class="gantt-track">
+                                    @for (week of timelineWeeks(); track week.start) {
+                                    <span class="gantt-division" [style.left.%]="weekMarkerPosition(week)"></span>
+                                    }
+                                    <span class="gantt-bar" [style.left.%]="taskStartOffset(task)"
+                                        [style.width.%]="taskDurationPercent(task)"
+                                        [class.dragging]="isDragging(task.uuid)"
+                                        (pointerdown)="startDrag($event, task, 'move')">
+                                        <span class="gantt-handle start"
+                                            (pointerdown)="startDrag($event, task, 'resize-start')"></span>
+                                        <span class="gantt-handle end"
+                                            (pointerdown)="startDrag($event, task, 'resize-end')"></span>
+                                        <span class="gantt-tooltip">{{ taskTooltip(task) }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="table-actions">
+                        <button class="btn ghost icon-only" type="button" (click)="describeTask.emit(task)"
+                            aria-label="View task description">
+                            <img src="/eye.svg" alt="" width="20" height="20" />
+                        </button>
+                        <button class="btn ghost icon-only action-icon" type="button"
+                            (click)="analyseTask.emit(task.uuid)" aria-label="View analysis">
+                            <img src="/analysis.svg" width="20" height="20" alt="" aria-hidden="true" />
+                        </button>
+                        <button class="btn ghost icon-only action-icon" type="button" (click)="estimateTask.emit(task)"
+                            aria-label="Estimate task">
+                            <img src="/brain.svg" width="20" height="20" alt="" aria-hidden="true" />
+                        </button>
+                        <button class="btn ghost icon-only action-icon" type="button"
+                            (click)="aiDescribeTask.emit(task)" aria-label="AI description">
+                            <img src="/description.svg" width="20" height="20" alt="" aria-hidden="true" />
+                        </button>
+                        <button class="btn ghost icon-only" type="button" (click)="editTask.emit(task)">
+                            <img src="/edit.svg" alt="Edit task" width="20" height="20" />
+                        </button>
+                        <button class="btn danger icon-only" type="button" (click)="removeTask.emit(task.uuid)">
+                            <img src="/trash.svg" alt="Delete task" width="20" height="20" />
+                        </button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
     </div>
-</div>
+    }
+</article>

@@ -3,8 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: '',
-        pathMatch: 'full',
-        redirectTo: 'list'
+        loadComponent: () => import('./page/landing-page/landing-page').then(c => c.LandingPage)
     },
     {
         path: 'list',
@@ -13,5 +12,9 @@ export const routes: Routes = [
     {
         path: 'project/:projectUuid',
         loadComponent: () => import('./page/project-detail-page/project-detail-page').then(c => c.ProjectDetailPage)
+    },
+    {
+        path: '**',
+        redirectTo: ''
     }
 ];

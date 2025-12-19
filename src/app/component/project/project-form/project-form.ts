@@ -1,9 +1,13 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
 import { Project, UpsertProjectCommand } from '../../../model/project.model';
 import { ProjectService } from '../../../service/project-service';
-import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { CoreService } from '../../../service/core-service';
-import { DateType } from '../../../model/core.model';
+
+const trimmedRequired: ValidatorFn = (control) => {
+  const value = (control.value ?? '') as string;
+  return value.trim() ? null : { required: true };
+};
 
 @Component({
   selector: 'app-project-form',
@@ -21,27 +25,35 @@ export class ProjectForm {
 
   form = this.projectService.projectForm();
   additionalFieldForm = this.nfb.group({
-    key: ['', [Validators.required]],
-    value: ['', [Validators.required]],
+    key: ['', [trimmedRequired]],
+    value: ['', [trimmedRequired]],
   });
 
   data = input<Project>();
   edited = output<UpsertProjectCommand>();
+  cancelled = output<void>();
 
   constructor() {
     effect(() => this.resetFormState(this.data()));
   }
 
   save(): void {
+    // check blank spaces in title
+    const title = this.form.controls.title;
+    const rawTitle = title.value?.trim() ?? '';
+    if (!rawTitle) {
+      title.setErrors({ required: true });
+      this.form.markAllAsTouched();
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    const rawValue = this.form.getRawValue();
+
+    // normalize dates and emit
     const command: UpsertProjectCommand = {
-      ...rawValue,
-      startDate: this.normalizeDate(rawValue.startDate),
-      endDate: this.normalizeDate(rawValue.endDate)
+      ...this.form.getRawValue(),
     };
     this.edited.emit(command);
   }
@@ -58,6 +70,13 @@ export class ProjectForm {
       return;
     }
 
+    const valueControl = this.additionalFieldForm.controls.value;
+    const value = valueControl.value.trim();
+    if (!value) {
+      valueControl.setErrors({ required: true });
+      return;
+    }
+
     if (this.form.controls.additionalFields.controls[key]) {
       this.additionalFieldForm.controls.key.setErrors({ duplicated: true });
       return;
@@ -65,7 +84,7 @@ export class ProjectForm {
 
     this.form.controls.additionalFields.addControl(
       key,
-      this.nfb.control(this.additionalFieldForm.controls.value.value ?? '')
+      this.nfb.control(value)
     );
     this.additionalFieldForm.reset();
   }
@@ -81,8 +100,8 @@ export class ProjectForm {
     }));
   }
 
-  resetForm(): void {
-    this.resetFormState(this.data());
+  cancelProjectEdition(): void {
+    this.cancelled.emit();
   }
 
   private resetFormState(project?: Project): void {
@@ -90,11 +109,29 @@ export class ProjectForm {
     this.additionalFieldForm.reset();
   }
 
-  private normalizeDate(date: DateType): DateType {
-    return {
-      ...date,
-      month: this.core.toBackendMonth(date.month),
-      week: this.core.toBackendWeek(date.week),
-    };
+  dateRangeError(): boolean {
+    return !!this.form.errors?.['dateRange'] && this.form.touched;
+  }
+
+  get startYearControl(): FormControl<number> {
+    return this.form.controls.startDate.controls.year;
+  }
+
+  get endYearControl(): FormControl<number> {
+    return this.form.controls.endDate.controls.year;
+  }
+
+  yearError(control: FormControl<number>): { type: 'min' | 'max'; value: number } | null {
+    const errors = control.errors;
+    if (!control.touched || !errors) {
+      return null;
+    }
+    if (errors['min']) {
+      return { type: 'min', value: errors['min'].min };
+    }
+    if (errors['max']) {
+      return { type: 'max', value: errors['max'].max };
+    }
+    return null;
   }
 }

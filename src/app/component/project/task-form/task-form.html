@@ -1,36 +1,44 @@
 <form [formGroup]="form" (ngSubmit)="save()">
-  <div class="field-group">
-    <label>Task title</label>
+  <fieldset>
+    <legend>Task title</legend>
     <input formControlName="title" />
-  </div>
+  </fieldset>
 
-  <div class="field-group">
-    <label>Description</label>
+  <fieldset>
+    <legend>Description</legend>
     <textarea rows="3" formControlName="description"></textarea>
-  </div>
+  </fieldset>
 
-  <div class="field-group">
-    <label>Duration (weeks)</label>
+  <fieldset>
+    <legend>Duration (weeks)</legend>
     <input type="number" min="1" formControlName="durationWeeks" />
-  </div>
+  </fieldset>
 
   <fieldset formGroupName="startDate">
     <legend>Start date</legend>
-    <label>Year</label>
-    <input type="number" formControlName="year" />
-    <label>Month</label>
-    <select formControlName="month">
-      @for (month of core.monthNames; track month; let idx = $index) {
-        <option [value]="idx">{{ month }}</option>
-      }
-    </select>
-    <label>Week</label>
-    <select formControlName="week">
-      <option [value]="0">Week 1</option>
-      <option [value]="1">Week 2</option>
-      <option [value]="2">Week 3</option>
-      <option [value]="3">Week 4</option>
-    </select>
+    <div class="fieldset-grid">
+      <div class="field-group">
+        <label>Year</label>
+        <input type="number" formControlName="year" />
+      </div>
+      <div class="field-group">
+        <label>Month</label>
+        <select formControlName="month">
+          @for (month of core.monthNames; track month; let idx = $index) {
+            <option [ngValue]="idx">{{ month }}</option>
+          }
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Week</label>
+        <select formControlName="week">
+          <option [ngValue]="0">Week 1</option>
+          <option [ngValue]="1">Week 2</option>
+          <option [ngValue]="2">Week 3</option>
+          <option [ngValue]="3">Week 4</option>
+        </select>
+      </div>
+    </div>
   </fieldset>
 
   <div class="form-actions">
