@@ -320,6 +320,10 @@
                     <p class="analysis-card__label">Task</p>
                     <h3 class="analysis-card__title">{{ taskAnalysis.taskTitle }}</h3>
                     <p class="analysis-card__dates">Completion trend</p>
+                    <p class="analysis-card__dates">
+                      {{ taskAnalysis.initialCompletion * 100 | number:'1.0-0' }}% →
+                      {{ taskAnalysis.endCompletion * 100 | number:'1.0-0' }}%
+                    </p>
                   </div>
                   <div
                     class="analysis-badge"
