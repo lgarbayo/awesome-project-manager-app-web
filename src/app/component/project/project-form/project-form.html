@@ -18,11 +18,14 @@
       <div>
         <label>Year</label>
         <input type="number" formControlName="year" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()" />
-        @if (form.controls.startDate.controls.year.errors?.['min'] && form.controls.startDate.controls.year.touched) {
-          <small>⚠️ Minimum allowed year is {{ form.controls.startDate.controls.year.errors?.['min'].min }}.</small>
-        }
-        @if (form.controls.startDate.controls.year.errors?.['max'] && form.controls.startDate.controls.year.touched) {
-          <small>⚠️ Maximum allowed year is {{ form.controls.startDate.controls.year.errors?.['max'].max }}.</small>
+        @if (yearError(startYearControl); as startYearIssue) {
+          <small>
+            @if (startYearIssue.type === 'min') {
+                ⚠️ Minimum allowed year is {{ startYearIssue.value }}.
+            } @else {
+                ⚠️ Maximum allowed year is {{ startYearIssue.value }}.
+            }
+          </small>
         }
       </div>
       <div>
@@ -51,11 +54,14 @@
       <div>
         <label>Year</label>
         <input type="number" formControlName="year" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()" />
-        @if (form.controls.endDate.controls.year.errors?.['min'] && form.controls.endDate.controls.year.touched) {
-          <small>⚠️ Minimum allowed year is {{ form.controls.endDate.controls.year.errors?.['min'].min }}.</small>
-        }
-        @if (form.controls.endDate.controls.year.errors?.['max'] && form.controls.endDate.controls.year.touched) {
-          <small>⚠️ Maximum allowed year is {{ form.controls.endDate.controls.year.errors?.['max'].max }}.</small>
+        @if (yearError(endYearControl); as endYearIssue) {
+          <small>
+            @if (endYearIssue.type === 'min') {
+              ⚠️ Minimum allowed year is {{ endYearIssue.value }}.
+            } @else {
+              ⚠️ Maximum allowed year is {{ endYearIssue.value }}.
+            }
+          </small>
         }
       </div>
       <div>
@@ -101,12 +107,16 @@
     @if (additionalFieldForm.controls.key.errors?.['duplicated']) {
       <small>The field already exists in the list.</small>
     }
-    <div class="stack-sm">
+    <div class="stack-sm additional-fields-list">
       @for (field of additionalFieldList(); track field.key) {
-        <div class="field-group">
+        <div class="field-group additional-field-row">
           <label>{{ field.key }}</label>
-          <input [formControl]="field.control" />
-          <button class="btn danger" type="button" (click)="removeAdditionalField(field.key)">Delete</button>
+          <div class="additional-field-row__content">
+            <input [formControl]="field.control" />
+            <button class="btn danger icon-only" type="button" (click)="removeAdditionalField(field.key)" aria-label="Delete field">
+              <img src="/trash.svg" alt="" width="20" height="20" />
+            </button>
+          </div>
         </div>
       }
     </div>

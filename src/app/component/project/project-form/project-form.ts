@@ -113,4 +113,25 @@ export class ProjectForm {
     return !!this.form.errors?.['dateRange'] && this.form.touched;
   }
 
+  get startYearControl(): FormControl<number> {
+    return this.form.controls.startDate.controls.year;
+  }
+
+  get endYearControl(): FormControl<number> {
+    return this.form.controls.endDate.controls.year;
+  }
+
+  yearError(control: FormControl<number>): { type: 'min' | 'max'; value: number } | null {
+    const errors = control.errors;
+    if (!control.touched || !errors) {
+      return null;
+    }
+    if (errors['min']) {
+      return { type: 'min', value: errors['min'].min };
+    }
+    if (errors['max']) {
+      return { type: 'max', value: errors['max'].max };
+    }
+    return null;
+  }
 }
