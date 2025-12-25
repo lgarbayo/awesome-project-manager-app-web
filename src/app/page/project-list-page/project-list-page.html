@@ -1,17 +1,92 @@
-<h1>Project List</h1>
-
-<ul>
-    @for (p of projectList(); track p.uuid) {
-    <li>
-        {{ p.title }}
-        <a [routerLink]="['..', 'project', p.uuid]">Go to details</a>
-    </li>
-    }
-</ul>
-
-<div>
-    <app-project-form></app-project-form>
-    <div>
-        <button>CREAR</button>
+<section class="project-dashboard stack-lg">
+  <header class="project-hero card pad">
+    <div class="project-hero__content">
+      <h1 class="project-hero__title">Plan every milestone with clarity</h1>
+      <p class="project-hero__description">
+        Capture projects, milestones, tasks and AI estimation in one clear workspace for your team.
+      </p>
+      <div class="project-hero__cta">
+        <button class="btn primary" type="button" (click)="openCreateModal()">CREATE NEW PROJECT</button>
+      </div>
     </div>
-</div>
+  </header>
+
+  <article class="card pad stack-md project-list-card">
+    <div class="row row-refresh project-list-header">
+      <div>
+        <h2 class="title">Project portfolio</h2>
+        <span class="pill">{{ projectList().length }} total</span>
+      </div>
+      @if (loading()) {
+        <span class="pill">Loading…</span>
+      }
+    </div>
+    @if (errorMessage(); as error) {
+      <p class="error">{{ error }}</p>
+    }
+    @if (!loading() && projectList().length === 0) {
+      <div class="project-empty-state">
+        <div class="project-empty-illustration" aria-hidden="true">
+          <svg viewBox="0 0 220 160" role="presentation" focusable="false">
+            <defs>
+              <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#818cf8" stop-opacity="0.3" />
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.5" />
+              </linearGradient>
+            </defs>
+            <rect x="20" y="35" width="180" height="90" rx="20" fill="url(#heroGradient)" />
+            <image href="/dataspartan.avif" x="60" y="45" width="100" height="70" opacity="0.15" preserveAspectRatio="xMidYMid meet" />
+            <rect x="40" y="130" width="140" height="8" rx="4" fill="rgba(129,140,248,0.25)" />
+          </svg>
+        </div>
+        <div class="project-empty-copy">
+          <h3>Start your first initiative</h3>
+          <p>Capture the scope, milestones and estimates of your team in one source of truth.</p>
+          <button class="btn primary" type="button" (click)="openCreateModal()">Create project</button>
+        </div>
+      </div>
+    } @else {
+      <div class="grid projects">
+        @for (project of projectList(); track trackProject($index, project); let idx = $index) {
+          <article class="project-card" [style.animationDelay]="(idx * 80) + 'ms'">
+            <div>
+              <p class="project-title">{{ project.title }}</p>
+              <p class="project-meta">
+                <span>Start: {{ core.formatDateLabel(project.startDate) }}</span>
+                <span>End: {{ core.formatDateLabel(project.endDate) }}</span>
+              </p>
+            </div>
+            <div class="project-actions">
+              <a
+                class="btn ghost icon-only"
+                [routerLink]="['..', 'project', project.uuid]"
+                aria-label="View project details"
+                title="View details"
+              >
+                <img src="/eye.svg" alt="" width="20" height="20" />
+              </a>
+              <button class="btn danger icon-only" type="button" (click)="deleteProject(project.uuid)" aria-label="Delete project">
+                <img src="/trash.svg" alt="" width="20" height="20" />
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </article>
+</section>
+
+@if (showCreateModal()) {
+  <div class="modal-backdrop" (click)="closeCreateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="title">Create a new project</h2>
+        <button class="btn ghost" type="button" (click)="closeCreateModal()">Close</button>
+      </div>
+      <div class="modal-body">
+        <p class="subtitle">Define the basics and start tracking progress right away.</p>
+        <app-project-form (edited)="createProject($event)" (cancelled)="closeCreateModal()"></app-project-form>
+      </div>
+    </div>
+  </div>
+}

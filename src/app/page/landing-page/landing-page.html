@@ -1,0 +1,16 @@
+<section class="landing landing-simple">
+  <video #bgVideo class="landing-background-video" src="/138556-769988117.mp4" autoplay muted loop playsinline
+    preload="auto"></video>
+  <div class="landing-video-overlay"></div>
+  <div class="landing-simple-content">
+    <h1 class="landing-simple-title" aria-label="Awesome Project Manager">
+      @for (letter of titleLetters; track trackLetter($index); let idx = $index) {
+      <span class="landing-simple-letter" [style.animationDelay]="(idx * 120) + 'ms'">{{ letter }}</span>
+      }
+    </h1>
+    <p class="landing-simple-subtitle">Plan, estimate, and visualize your projects without complications.</p>
+    <div class="landing-simple-cta">
+      <a class="btn primary" routerLink="/list">Explore projects</a>
+    </div>
+  </div>
+</section>

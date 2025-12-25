@@ -1,6 +1,20 @@
-<div>
-  General layout: sidenav, header, profile icon, banner, etc.
-</div>
-<div>
+@if (!isLandingRoute()) {
+  <header class="app-header">
+    <div class="wrap">
+      <a class="brand" routerLink="/list">
+        <img src="/dataspartan.png" alt="Awesome Project Manager" class="brand-logo" width="48" height="48" loading="lazy" />
+        AWESOME PROJECT MANAGER
+      </a>
+      <div class="spacer"></div>
+      <button class="btn ghost" type="button" (click)="toggleTheme()">
+        {{ theme() === 'dark' ? 'Light mode' : 'Dark mode' }}
+      </button>
+    </div>
+  </header>
+}
+
+<main class="container" [class.container--landing]="isLandingRoute()">
   <router-outlet></router-outlet>
-</div>
+</main>
+
+<footer class="footer" [class.footer--overlay]="isLandingRoute()">Dataspartan · 2025</footer>

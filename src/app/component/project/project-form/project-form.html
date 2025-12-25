@@ -1,22 +1,131 @@
-<form [formGroup]="form">
+<form [formGroup]="form" (ngSubmit)="save()">
+  <fieldset>
+    <legend>Project title</legend>
+    <input formControlName="title" placeholder="Roadmap 2025" />
+    @if (form.controls.title.invalid && form.controls.title.touched) {
+      <small>⚠️ This field is required.</small>
+    }
+  </fieldset>
 
-  <!-- Title -->
-  <div>
-    <label>Title</label>
-    <input formControlName="title" />
-  </div>
+  <fieldset>
+    <legend>Description</legend>
+    <textarea rows="3" formControlName="description" placeholder="Describe the scope"></textarea>
+  </fieldset>
 
-  <!-- Description -->
-  <div>
-    <label>Description</label>
-    <textarea rows="3" formControlName="description"></textarea>
-  </div>
+  <fieldset formGroupName="startDate">
+    <legend>Start date</legend>
+    <div class="fieldset-grid">
+      <div>
+        <label>Year</label>
+        <input type="number" formControlName="year" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()" />
+        @if (yearError(startYearControl); as startYearIssue) {
+          <small>
+            @if (startYearIssue.type === 'min') {
+                ⚠️ Minimum allowed year is {{ startYearIssue.value }}.
+            } @else {
+                ⚠️ Maximum allowed year is {{ startYearIssue.value }}.
+            }
+          </small>
+        }
+      </div>
+      <div>
+        <label>Month</label>
+        <select formControlName="month" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
+          @for (month of core.monthNames; track month; let idx = $index) {
+            <option [ngValue]="idx">{{ month }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Week</label>
+        <select formControlName="week" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
+          <option [ngValue]="0">Week 1</option>
+          <option [ngValue]="1">Week 2</option>
+          <option [ngValue]="2">Week 3</option>
+          <option [ngValue]="3">Week 4</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
 
-  <div formGroupName="startDate">
-    <label>Start Date</label>
-    <input type="number" formControlName="week" />
+  <fieldset formGroupName="endDate">
+    <legend>End date</legend>
+    <div class="fieldset-grid">
+      <div>
+        <label>Year</label>
+        <input type="number" formControlName="year" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()" />
+        @if (yearError(endYearControl); as endYearIssue) {
+          <small>
+            @if (endYearIssue.type === 'min') {
+              ⚠️ Minimum allowed year is {{ endYearIssue.value }}.
+            } @else {
+              ⚠️ Maximum allowed year is {{ endYearIssue.value }}.
+            }
+          </small>
+        }
+      </div>
+      <div>
+        <label>Month</label>
+        <select formControlName="month" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
+          @for (month of core.monthNames; track month; let idx = $index) {
+            <option [ngValue]="idx">{{ month }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Week</label>
+        <select formControlName="week" [class.ng-invalid]="dateRangeError()" [class.ng-touched]="dateRangeError()">
+          <option [ngValue]="0">Week 1</option>
+          <option [ngValue]="1">Week 2</option>
+          <option [ngValue]="2">Week 3</option>
+          <option [ngValue]="3">Week 4</option>
+        </select>
+      </div>
+    </div>
+    @if (form.errors?.['dateRange'] && form.touched) {
+      <small>⚠️ The end date must be after the start date.</small>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>Extra fields</legend>
+    <div class="additional-controls" [formGroup]="additionalFieldForm">
+      <div class="additional-field">
+        <input placeholder="Field name" formControlName="key" />
+        @if (additionalFieldForm.controls.key.invalid && additionalFieldForm.controls.key.touched) {
+          <small>⚠️ This field is required.</small>
+        }
+      </div>
+      <div class="additional-field">
+        <input placeholder="Value" formControlName="value" />
+        @if (additionalFieldForm.controls.value.invalid && additionalFieldForm.controls.value.touched) {
+          <small>⚠️ This field is required.</small>
+        }
+      </div>
+      <button class="btn ghost" type="button" (click)="addAdditionalField()">Add field</button>
+    </div>
+    @if (additionalFieldForm.controls.key.errors?.['duplicated']) {
+      <small>The field already exists in the list.</small>
+    }
+    <div class="stack-sm additional-fields-list">
+      @for (field of additionalFieldList(); track field.key) {
+        <div class="field-group additional-field-row">
+          <label>{{ field.key }}</label>
+          <div class="additional-field-row__content">
+            <input [formControl]="field.control" />
+            <button class="btn danger icon-only" type="button" (click)="removeAdditionalField(field.key)" aria-label="Delete field">
+              <img src="/trash.svg" alt="" width="20" height="20" />
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="btn primary" type="submit">
+      {{ data() ? 'Update project' : 'Create project' }}
+    </button>
+    <button class="btn ghost" type="button" (click)="cancelProjectEdition()">Cancel</button>
   </div>
 </form>
-<div>
-    <button (click)="save()">Guardar cambios</button>
-</div>
