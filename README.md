@@ -1,71 +1,94 @@
 # Awesome Project Manager Web App
 
-TD;DR;
+Aplicacion web para la gestion de proyectos con un flujo basico de listado, detalle y edicion, mas un prototipo de gantt interactivo con exportacion a Excel. El objetivo principal es servir como base de interfaz para integrarse con una API REST y evolucionar hacia una experiencia completa de gestion de portafolios.
 
-Prerrequisites:
-- Node (at least v22)
+## Caracteristicas principales
+
+- Listado de proyectos con navegacion al detalle.
+- Detalle de proyecto con formulario de edicion.
+- Gantt de tareas como prueba de concepto con configuracion por semanas.
+- Exportacion del gantt a Excel.
+- Arquitectura modular por paginas, componentes, servicios y modelos.
+
+## Tecnologias
+
+- Angular 20
+- RxJS 7
+- Formularios reactivos
+- ExcelJS y FileSaver para exportacion
+
+## Requisitos
+
+- Node.js 22 o superior
+- npm 10 o superior
+
+## Instalacion
 
 ```bash
-npm i
+npm install
+```
+
+## Ejecucion en desarrollo
+
+```bash
 npm run start
 ```
 
-# Original README from Angular
+La aplicacion queda disponible en `http://localhost:4200/`.
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.10.
-
-## Development server
-
-To start a local development server, run:
+## Scripts disponibles
 
 ```bash
-ng serve
+npm run start   # servidor de desarrollo
+npm run build   # build de produccion
+npm run watch   # build con watch en modo desarrollo
+npm run test    # pruebas unitarias con Karma
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Estructura de carpetas
 
-## Code scaffolding
+```
+src/app/
+  component/        componentes reutilizables (ej. gantt, formularios)
+  model/            interfaces y modelos de dominio
+  page/             paginas y pantallas principales
+  service/          capa de acceso a datos y logica de negocio
+```
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Flujo funcional actual
+
+1. La ruta raiz redirige a `/list`, que muestra proyectos de ejemplo.
+2. Cada proyecto abre su detalle en `/project/:projectUuid`.
+3. En el detalle se muestra el formulario de edicion y el gantt.
+
+## Integracion con API
+
+Los servicios aun no consumen una API real. En `src/app/service/project-service.ts`:
+
+- `list()` y `get()` usan datos de ejemplo y realizan una llamada ficticia para simular latencia.
+- `createProject()` y `updateProject()` contienen rutas placeholder (`path!!`, `path/:projectUuid`).
+
+Para integrar la API real, reemplazar esas rutas y adaptar los modelos a la respuesta del backend.
+
+## Datos de ejemplo
+
+El listado y el detalle se alimentan de un conjunto fijo de proyectos de prueba definido en `src/app/service/project-service.ts`. Esto permite desarrollar la interfaz sin depender del backend.
+
+## Exportacion a Excel
+
+El gantt ofrece un boton de descarga que genera un archivo Excel con la tabla renderizada. El comportamiento se encuentra en `src/app/component/project/task-gantt/task-gantt.ts`.
+
+## Pruebas
 
 ```bash
-ng generate component component-name
+npm run test
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Build de produccion
 
 ```bash
-ng generate --help
+npm run build
 ```
 
-## Building
+Los artefactos se generan en `dist/`.
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
