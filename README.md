@@ -92,6 +92,7 @@ npm run build
 
 Los artefactos se generan en `dist/`.
 
+---
 
   ## Contribuciones
 
