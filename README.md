@@ -92,3 +92,11 @@ npm run build
 
 Los artefactos se generan en `dist/`.
 
+
+  ## Contribuciones
+
+  1. Haz un fork del repositorio.
+  2. Crea una rama feature: git checkout -b feature/nueva-funcionalidad que cuelgue de la rama develop.
+  3. Asegúrate de pasar los tests y respeta el estilo del proyecto.
+  4. Envía un pull request explicando claramente el cambio.
+
